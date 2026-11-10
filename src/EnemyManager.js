@@ -1,6 +1,6 @@
-import { SpatialHash } from "./SpatialHash.js";
-import { BOSS_SCHEDULE } from "./data.js";
-import { drawSprite } from "./Sprites.js";
+import { SpatialHash } from "./SpatialHash.js?v=2.0.1";
+import { BOSS_SCHEDULE } from "./data.js?v=2.0.1";
+import { drawSprite } from "./Sprites.js?v=2.0.1";
 const COLORS = {
   panzer: "#9b9d89",
   margwa: "#a77a88",

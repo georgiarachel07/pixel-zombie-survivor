@@ -1,4 +1,4 @@
-import { segmentRect } from "./Combat.js";
+import { segmentRect } from "./Combat.js?v=2.0.1";
 export class World {
   constructor(stage) {
     this.stage = stage;

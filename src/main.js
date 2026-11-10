@@ -1,17 +1,17 @@
-import { Player } from "./Player.js";
-import { EnemyManager } from "./EnemyManager.js";
-import { WeaponSystem } from "./WeaponSystem.js";
-import { PickupManager } from "./PickupManager.js";
-import { FXManager } from "./FXManager.js";
-import { World } from "./World.js";
-import { Save } from "./Save.js";
-import { UI } from "./UI.js";
-import { AudioManager } from "./Audio.js";
-import { Input } from "./Input.js";
-import { ClassSkills } from "./ClassSkills.js";
-import { BossDirector } from "./BossDirector.js";
-import { drawHero, drawSprite } from "./Sprites.js";
-import { HEROES, MODES } from "./data.js";
+import { Player } from "./Player.js?v=2.0.1";
+import { EnemyManager } from "./EnemyManager.js?v=2.0.1";
+import { WeaponSystem } from "./WeaponSystem.js?v=2.0.1";
+import { PickupManager } from "./PickupManager.js?v=2.0.1";
+import { FXManager } from "./FXManager.js?v=2.0.1";
+import { World } from "./World.js?v=2.0.1";
+import { Save } from "./Save.js?v=2.0.1";
+import { UI } from "./UI.js?v=2.0.1";
+import { AudioManager } from "./Audio.js?v=2.0.1";
+import { Input } from "./Input.js?v=2.0.1";
+import { ClassSkills } from "./ClassSkills.js?v=2.0.1";
+import { BossDirector } from "./BossDirector.js?v=2.0.1";
+import { drawHero, drawSprite } from "./Sprites.js?v=2.0.1";
+import { HEROES, MODES } from "./data.js?v=2.0.1";
 
 export class Game {
   constructor() {

@@ -1,7 +1,7 @@
-import { CLASS_SKILLS } from "./data.js";
-import { inThrust } from "./Combat.js";
-import { drawHero } from "./Sprites.js";
-import { drawHeldWeapon } from "./WeaponVisuals.js";
+import { CLASS_SKILLS } from "./data.js?v=2.0.1";
+import { inThrust } from "./Combat.js?v=2.0.1";
+import { drawHero } from "./Sprites.js?v=2.0.1";
+import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.0.1";
 export class ClassSkills {
   constructor(game) {
     this.game = game;
@@ -44,7 +44,7 @@ export class ClassSkills {
       this.definition.cool *
       Math.max(0.35, 1 - (p.passives.cooldown || 0) * 0.08) *
       0.9 ** (this.level - 1);
-    const damage = (1 + (this.level - 1) * 0.15) * p.damage,
+    const damage = (1 + (this.level - 1) * 0.15) * g.weapons.damageValue(1),
       near = g.enemies.hash.nearest(p.x, p.y, 500),
       angle = near ? Math.atan2(near.y - p.y, near.x - p.x) : p.aimAngle || 0,
       tx = near?.x ?? p.x + Math.cos(angle) * 90,

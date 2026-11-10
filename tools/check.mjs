@@ -14,7 +14,7 @@ async function walk(dir) {
       if (r.status !== 0) throw Error(r.stderr);
       let text = await fs.readFile(p, "utf8");
       for (let m of text.matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+)['"]/g))
-        await fs.access(path.resolve(path.dirname(p), m[1]));
+        await fs.access(path.resolve(path.dirname(p), m[1].split("?")[0]));
       count++;
     }
   }
