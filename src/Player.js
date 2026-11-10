@@ -19,6 +19,11 @@ export class Player {
     this.dashCooldown = 0;
     this.facing = 1;
     this.moving = false;
+    this.aimAngle = 0;
+    this.immunity = 0;
+    this.fireBuff = 0;
+    this.spinTime = 0;
+    this.keys = 2;
     this.lastX = 1;
     this.lastY = 0;
   }
@@ -29,12 +34,24 @@ export class Player {
     return this.baseArmor + (this.passives.armor || 0) * 2;
   }
   get magnet() {
-    return this.baseMagnet + (this.passives.magnet || 0) * 30;
+    return this.baseMagnet + (this.passives.magnet || 0) * 55;
   }
   get damage() {
     return this.attack * (1 + (this.passives.battery || 0) * 0.12);
   }
+  get critChance() {
+    return Math.min(
+      0.9,
+      0.05 + (this.hero.crit || 0) + (this.passives.crit || 0) * 0.07,
+    );
+  }
+  get critMultiplier() {
+    return 2 + (this.passives.crit || 0) * 0.2;
+  }
   update(dt, input, world) {
+    this.immunity = Math.max(0, this.immunity - dt);
+    this.fireBuff = Math.max(0, this.fireBuff - dt);
+    this.spinTime = Math.max(0, this.spinTime - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
     this.dashTimer = Math.max(0, this.dashTimer - dt);
@@ -72,8 +89,11 @@ export class Player {
     world.move(this, x * speed * dt, y * speed * dt);
   }
   hurt(amount, game) {
-    if (this.invulnerable > 0) return;
-    if (Math.random() < (this.hero.dodge || 0)) {
+    if (this.invulnerable > 0 || this.immunity > 0) return;
+    if (
+      Math.random() <
+      Math.min(0.7, (this.hero.dodge || 0) + (this.passives.boots || 0) * 0.03)
+    ) {
       game.fx.text(this.x, this.y, "DODGE", "#b7e4db");
       this.invulnerable = 0.25;
       return;

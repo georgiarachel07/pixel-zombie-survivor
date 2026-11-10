@@ -2,6 +2,8 @@ export class Input {
   constructor(game) {
     this.keys = new Set();
     this.dash = false;
+    this.skill = false;
+    this.interact = false;
     this.touchX = 0;
     this.touchY = 0;
     this.pointer = null;
@@ -15,6 +17,8 @@ export class Input {
         e.preventDefault();
       this.keys.add(k);
       if (k === " " && !e.repeat) this.dash = true;
+      if (k === "e" && !e.repeat) this.skill = true;
+      if (k === "f" && !e.repeat) this.interact = true;
       if (k === "escape" && !e.repeat) game.togglePause();
     });
     window.addEventListener("keyup", (e) =>
@@ -59,6 +63,16 @@ export class Input {
     };
     stick.addEventListener("pointerup", end);
     stick.addEventListener("pointercancel", end);
+    document.querySelector("#skill")?.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      this.skill = true;
+    });
+    document
+      .querySelector("#interact")
+      ?.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        this.interact = true;
+      });
     document.querySelector("#dash").addEventListener("pointerdown", (e) => {
       e.preventDefault();
       this.dash = true;

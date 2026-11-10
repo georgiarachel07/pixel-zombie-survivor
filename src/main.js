@@ -8,7 +8,9 @@ import { Save } from "./Save.js";
 import { UI } from "./UI.js";
 import { AudioManager } from "./Audio.js";
 import { Input } from "./Input.js";
-import { drawSprite } from "./Sprites.js";
+import { ClassSkills } from "./ClassSkills.js";
+import { BossDirector } from "./BossDirector.js";
+import { drawHero, drawSprite } from "./Sprites.js";
 import { HEROES, MODES } from "./data.js";
 
 export class Game {
@@ -68,6 +70,10 @@ export class Game {
     this.enemies = new EnemyManager(this);
     this.pickups = new PickupManager(this);
     this.weapons = new WeaponSystem(this);
+    if (hero.id === "paladin") this.weapons.add("holy");
+    this.skills = new ClassSkills(this);
+    this.director = new BossDirector(this);
+    this.audio.setBoss(false);
     this.kills = 0;
     this.runGold = 0;
     this.time = 0;
@@ -76,7 +82,7 @@ export class Game {
     this.state = "playing";
     this.input.clear();
     this.ui.begin();
-    this.toast("WASD TO MOVE · SPACE TO DASH · WEAPONS AUTO-FIRE", 4);
+    this.toast("WASD MOVE · SPACE DASH · E CLASS SKILL · F UNLOCK DOOR", 5);
     try {
       await this.audio.unlock();
     } catch {
@@ -108,6 +114,7 @@ export class Game {
     this.runGold = Math.floor(this.runGold + (won ? 100 * this.mode.mult : 0));
     this.save.bank(this.runGold, this.kills);
     this.audio.suspended = false;
+    this.audio.setBoss(false);
     this.ui.result(won, extracted);
     this.toastTime = 0;
     document.querySelector("#toast").textContent = "";
@@ -115,6 +122,10 @@ export class Game {
   update(dt) {
     this.time += dt;
     this.player.update(dt, this.input, this.world);
+    this.director.update();
+    this.world.update(dt, this);
+    if (this.state !== "playing") return;
+    this.skills.update(dt);
     this.enemies.update(dt);
     if (this.state !== "playing") return;
     this.weapons.update(dt);
@@ -125,7 +136,12 @@ export class Game {
       this.player.levelUp();
       this.ui.levelUp();
     }
-    if (this.time >= this.mode.duration && this.state === "playing")
+    if (
+      this.time >= this.mode.duration &&
+      this.state === "playing" &&
+      (this.modeId === "speedrun" ||
+        !this.enemies.pool.some((e) => e.active && (e.boss || e.half)))
+    )
       this.end(this.modeId !== "speedrun");
     this.audio.intensity = Math.min(1, this.enemies.count / 350);
   }
@@ -213,19 +229,19 @@ export class Game {
         );
         ctx.stroke();
       }
-      drawSprite(
+      drawHero(
         ctx,
-        "hero",
-        p.hero.color,
+        p.hero,
         p.x - cx,
         p.y - cy,
         this.time,
         p.moving,
         1,
-        p.facing,
+        p.aimAngle,
         p.invulnerable > 0.1 && ((this.time * 12) | 0) % 2 === 0,
       );
       this.weapons.draw(ctx, cx, cy, this.time);
+      this.skills.draw(ctx, cx, cy, this.time);
       this.fx.draw(ctx, cx, cy);
       if (p.dashCooldown <= 0) {
         ctx.fillStyle = "#e1c681";
@@ -265,6 +281,7 @@ export class Game {
       ctx.fillStyle = "#d6d2a155";
       for (let i = 0; i < 5; i++) ctx.fillRect(430 + i * 18, 210 - i * 4, 3, 1);
     }
+    this.world.drawAtmosphere(ctx, cx, cy, w, h, this.ambientTime);
     const v = ctx.createRadialGradient(
       w / 2,
       h / 2,

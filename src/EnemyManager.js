@@ -97,6 +97,16 @@ export class EnemyManager {
       armor: type === "panzer" ? 8 : 0,
       color: COLORS[type] || ["#718e65", "#8e9867", "#77967d"][e.id % 3],
       stamp: 0,
+      generation: (e.generation || 0) + 1,
+      kx: 0,
+      ky: 0,
+      bleedTime: 0,
+      bleedDps: 0,
+      bleedTick: 0,
+      bounty: 0,
+      timed: false,
+      encounter: 0,
+      orbUntil: 0,
     });
     e.hp = e.maxHp;
     e.headHp = e.maxHp / 3;
@@ -116,22 +126,33 @@ export class EnemyManager {
       p = g.player,
       t = g.time * g.mode.pace;
     g.world.updateFlow?.(p, dt);
-    this.spawnClock -= dt;
-    const interval = Math.max(0.035, 0.7 - t * 0.0008) / g.mode.pace;
-    while (this.spawnClock <= 0) {
-      this.spawnClock += interval;
-      let n = 1 + Math.floor(t / 100);
-      for (let i = 0; i < Math.min(8, n); i++) this.spawn();
-    }
-    while (
-      this.schedule < BOSS_SCHEDULE.length &&
-      t >= BOSS_SCHEDULE[this.schedule].at
-    ) {
-      this.spawn(BOSS_SCHEDULE[this.schedule++].type);
-    }
+    if (!g.director?.suppressing && g.time < g.mode.duration) {
+      this.spawnClock -= dt;
+      const interval = Math.max(0.035, 0.7 - t * 0.0008) / g.mode.pace;
+      let bursts = 0;
+      while (this.spawnClock <= 0 && bursts++ < 8) {
+        this.spawnClock += interval;
+        for (let i = 0; i < Math.min(8, 1 + Math.floor(t / 100)); i++)
+          this.spawn();
+      }
+    } else this.spawnClock = 0.3;
     for (let e of this.pool) {
       if (!e.active) continue;
       e.age += dt;
+      if (e.bleedTime > 0) {
+        e.bleedTime -= dt;
+        e.bleedTick -= dt;
+        if (e.bleedTick <= 0) {
+          e.bleedTick = 0.25;
+          this.hit(e, e.bleedDps * 0.25, { ignoreArmor: true });
+          if (!e.active) continue;
+        }
+      }
+      if (Math.hypot(e.kx || 0, e.ky || 0) > 1) {
+        g.world.move(e, (e.kx || 0) * dt, (e.ky || 0) * dt);
+        e.kx *= Math.exp(-9 * dt);
+        e.ky *= Math.exp(-9 * dt);
+      }
       e.hit = Math.max(0, e.hit - dt);
       e.enrage = Math.max(0, e.enrage - dt);
       let dx = p.x - e.x,
@@ -242,7 +263,7 @@ export class EnemyManager {
       g.fx.burst(e.x, e.y, "#b4df61", 8);
     }
   }
-  hit(e, damage) {
+  hit(e, damage, options = {}) {
     if (!e?.active) return false;
     const g = this.game;
     if (e.type === "margwa" && (e.phase < 2 || e.phase > 4)) {
@@ -250,7 +271,20 @@ export class EnemyManager {
       e.hit = 0.1;
       return false;
     }
-    let amount = Math.max(1, damage - e.armor);
+    let amount = Math.max(1, damage - (options.ignoreArmor ? 0 : e.armor));
+    if (options.bleed) {
+      e.bleedTime = 3;
+      e.bleedDps = Math.max(e.bleedDps || 0, options.bleed);
+      e.bleedTick = Math.min(e.bleedTick || 0, 0.25);
+    }
+    if (options.knock) {
+      e.kx =
+        (e.kx || 0) +
+        Math.cos(options.angle || 0) * options.knock * (e.boss ? 0.25 : 1);
+      e.ky =
+        (e.ky || 0) +
+        Math.sin(options.angle || 0) * options.knock * (e.boss ? 0.25 : 1);
+    }
     e.hp -= amount;
     e.hit = 0.09;
     if (e.type === "margwa") {
@@ -275,6 +309,7 @@ export class EnemyManager {
   }
   kill(e) {
     const g = this.game;
+    g.weapons.onKill?.(e);
     this.remove(e);
     g.kills++;
     g.fx.burst(e.x, e.y, "#ad6557", e.boss ? 30 : 5);
@@ -283,8 +318,17 @@ export class EnemyManager {
       g.fx.shake = 9;
       g.audio.effect("explosion");
       if (e.type === "megaton") {
-        this.spawn("bomber", e.x - 22, e.y);
-        this.spawn("blaster", e.x + 22, e.y);
+        for (let [type, dx] of [
+          ["bomber", -22],
+          ["blaster", 22],
+        ]) {
+          let h = this.spawn(type, e.x + dx, e.y);
+          if (h) {
+            h.timed = e.timed;
+            h.encounter = e.encounter;
+            h.maxHp = h.hp = e.maxHp * 0.33;
+          }
+        }
         g.toast("MEGATON SPLIT · DEFEAT BOTH HALVES");
       } else {
         g.pickups.drop(e.x, e.y, "chest", e.type === "thief" ? 180 : 75);
@@ -297,11 +341,18 @@ export class EnemyManager {
       }
     } else if (e.half) {
       g.pickups.drop(e.x, e.y, "gold", 30);
-      if (!this.pool.some((n) => n.active && n.half))
+      if (
+        !this.pool.some(
+          (n) => n.active && n.half && n.encounter === e.encounter,
+        )
+      )
         g.pickups.drop(e.x, e.y, "chest", 100);
     } else {
-      g.pickups.drop(e.x, e.y, "xp", Math.random() < 0.06 ? 5 : 1);
-      if (Math.random() < 0.025) g.pickups.drop(e.x + 5, e.y, "gold", 1);
+      let xp = Math.random() < 0.06 ? 5 : 1;
+      g.pickups.drop(e.x, e.y, "xp", xp * (e.bounty ? 3 : 1));
+      if (e.bounty) g.pickups.drop(e.x + 5, e.y, "gold", 3);
+      else if (Math.random() < 0.025) g.pickups.drop(e.x + 5, e.y, "gold", 1);
+      if (Math.random() < 0.012) g.pickups.drop(e.x - 4, e.y, "key", 1);
       if (Math.random() < 0.006) g.pickups.drop(e.x, e.y, "heal", 15);
       if (Math.random() < 0.0025) g.fx.emit("dissolve", e.x, e.y);
     }

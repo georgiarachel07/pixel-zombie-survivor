@@ -15,6 +15,10 @@ export class PickupManager {
       }
     }
     if (!item && type !== "xp") item = this.pool.find((q) => q.type === "xp");
+    if (!item && type === "chest")
+      item =
+        this.pool.find((q) => q.type !== "chest") ||
+        this.pool[this.cursor % this.pool.length];
     if (!item) {
       if (type === "xp") {
         // Merge XP in a bounded pool instead of allocating more drops.
@@ -62,7 +66,15 @@ export class PickupManager {
         } else if (q.type === "heal") {
           p.hp = Math.min(p.maxHp, p.hp + q.value);
           g.fx.text(p.x, p.y, "+15 HP", "#a6db97");
+        } else if (q.type === "rapid") {
+          p.fireBuff = Math.max(p.fireBuff, 6);
+          g.toast("RAPID FIRE · 6 SECONDS");
+          g.audio.effect("chest");
+        } else if (q.type === "key") {
+          p.keys++;
+          g.toast("KEY ACQUIRED · F TO UNLOCK A NEARBY DOOR");
         } else {
+          p.keys++;
           g.runGold += Math.round(q.value * gain);
           const evo = g.weapons.evolve();
           if (evo) g.toast(`EVOLUTION · ${evo}`, 4);
@@ -110,6 +122,16 @@ export class PickupManager {
         ctx.fillRect(x - 2, y - 5, 4, 8);
         ctx.strokeStyle = "#f2ce7655";
         ctx.strokeRect(x - 13, y - 12, 26, 23);
+      } else if (q.type === "key") {
+        ctx.fillStyle = "#f1d48a";
+        ctx.fillRect(x - 4, y - 3, 5, 5);
+        ctx.fillRect(x, y - 1, 7, 2);
+        ctx.fillRect(x + 4, y + 1, 2, 3);
+      } else if (q.type === "rapid") {
+        ctx.fillStyle = "#99cda8";
+        ctx.fillRect(x - 6, y - 5, 12, 10);
+        ctx.fillStyle = "#f8dc8e";
+        ctx.fillRect(x - 1, y - 5, 3, 10);
       } else {
         ctx.fillStyle = "#e7947f";
         ctx.fillRect(x - 4, y - 3, 8, 6);

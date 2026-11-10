@@ -12,6 +12,7 @@ export class AudioManager {
     this.intensity = 0;
     this.suspended = false;
     this.interval = null;
+    this.boss = false;
   }
   async unlock() {
     if (!this.ctx) {
@@ -33,6 +34,12 @@ export class AudioManager {
       this.interval = setInterval(() => this.schedule(), 80);
     }
     if (this.ctx.state === "suspended") await this.ctx.resume();
+  }
+  setBoss(active) {
+    if (this.boss === active) return;
+    this.boss = active;
+    this.step = 0;
+    if (this.ctx) this.next = this.ctx.currentTime;
   }
   setMusic(on) {
     this.music = on;
@@ -102,9 +109,11 @@ export class AudioManager {
     while (this.next < this.ctx.currentTime + 0.2) {
       let s = this.step % 32,
         bar = Math.floor(this.step / 32) % 4,
-        root = [45, 41, 48, 43][bar],
+        root = (this.boss ? [38, 38, 41, 37] : [45, 41, 48, 43])[bar],
         hz = (n) => 440 * 2 ** ((n - 69) / 12),
-        arp = [0, 7, 12, 15, 12, 7, 3, 7];
+        arp = this.boss
+          ? [0, 1, 7, 12, 13, 7, 1, 7]
+          : [0, 7, 12, 15, 12, 7, 3, 7];
       if (s % 4 === 0)
         this.tone(hz(root), "triangle", this.next, 0.38, 0.6, this.musicGain);
       if (s % 2 === 0)
@@ -116,7 +125,7 @@ export class AudioManager {
           0.1 + this.intensity * 0.06,
           this.musicGain,
         );
-      if (s % 8 === 0)
+      if (s % (this.boss ? 4 : 8) === 0)
         this.tone(120, "sine", this.next, 0.15, 0.8, this.musicGain, 34);
       if (s % 4 === 2) this.hiss(this.next, 0.055, 0.09, this.musicGain);
       if (s === 0) {
@@ -126,7 +135,7 @@ export class AudioManager {
       if (this.intensity > 0.5 && s % 4 === 1)
         this.hiss(this.next, 0.025, 0.05, this.musicGain);
       this.step++;
-      this.next += 60 / 106 / 4;
+      this.next += 60 / (this.boss ? 142 : 106) / 4;
     }
   }
   effect(type) {

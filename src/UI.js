@@ -5,8 +5,11 @@ import {
   SHOP,
   MODES,
   BOSS_SCHEDULE,
+  STAGES,
+  CLASS_SKILLS,
 } from "./data.js";
-import { sprite } from "./Sprites.js";
+import { drawHero } from "./Sprites.js";
+import { drawHeldWeapon } from "./WeaponVisuals.js";
 export const clock = (t) =>
   `${Math.floor(Math.max(0, t) / 60)
     .toString()
@@ -67,6 +70,8 @@ export class UI {
     g.state = "menu";
     this.hud.hidden = true;
     document.querySelector("#dash").hidden = true;
+    document.querySelector("#skill").hidden = true;
+    document.querySelector("#interact").hidden = true;
     document.querySelector("#arena").classList.remove("playing", "expanded");
     this.show(
       `<div class="menu"><div class="eyeline">NO RESCUE IS COMING</div><h1>DEADWOOD<br><span>SIGNAL.</span></h1><p class="intro">The last transmission went silent.<br>Now the dead are listening.<br>Build your arsenal. Survive the night.</p><div class="menu-actions"><button class="primary" id="deploy">DEPLOY SURVIVOR →</button><button id="shop">UPGRADE SHOP</button><button id="guide">FIELD GUIDE</button></div><div class="meta-line">${g.save.data.runs} RUNS &nbsp; / &nbsp; <b>${g.save.data.gold} GOLD</b> &nbsp; / &nbsp; BEST ${g.save.data.bestKills} KILLS</div></div>`,
@@ -79,14 +84,23 @@ export class UI {
     const g = this.game,
       hero = HEROES.find((h) => h.id === this.hero);
     this.show(
-      `<div class="panel"><div class="panel-head"><div><span class="tiny">PREPARE FOR DEPLOYMENT</span><h2>Choose your survivor</h2></div><button id="back">Back</button></div><div class="roster">${HEROES.map(
+      `<div class="panel selection-panel"><div class="panel-head"><div><span class="tiny">PREPARE FOR DEPLOYMENT</span><h2>Choose your survivor</h2></div><button id="back">Back</button></div><div class="roster">${HEROES.map(
         (h) => {
           let locked = h.unlock && g.save.data.totalGold < h.unlock;
-          return `<button class="hero-card ${h.id === this.hero ? "selected" : ""}" data-hero="${h.id}" aria-pressed="${h.id === this.hero}" ${locked ? "disabled" : ""}><canvas width="32" height="40" aria-hidden="true"></canvas>${h.name}${locked ? "<br>LOCKED" : ""}</button>`;
+          return `<button class="hero-card ${h.id === this.hero ? "selected" : ""}" data-hero="${h.id}" aria-pressed="${h.id === this.hero}" ${locked ? "disabled" : ""}><canvas width="72" height="64" aria-hidden="true"></canvas>${h.name}${locked ? "<br>LOCKED" : ""}</button>`;
         },
       ).join(
         "",
-      )}</div><div class="hero-info"><div><strong>${hero.name}</strong><p>${hero.desc}</p></div><small class="muted">${hero.hp} HP<br>${hero.speed} SPEED</small></div><div class="select-row"><label>STAGE<select id="stage"><option value="forest" ${this.stage === "forest" ? "selected" : ""}>Deadwood Forest · Open terrain</option><option value="dungeon" ${this.stage === "dungeon" ? "selected" : ""}>The Undercroft · Corridors</option></select></label><label>MISSION<select id="mode">${Object.entries(
+      )}</div><div class="hero-info"><div><strong>${hero.name}</strong><p>${hero.desc}</p><p class="class-skill-preview"><b>[E] ${CLASS_SKILLS[hero.id].name}</b> · ${CLASS_SKILLS[hero.id].cool}s<br>${CLASS_SKILLS[hero.id].desc}</p></div><small class="muted">${hero.hp} HP<br>${hero.speed} SPEED</small></div><div class="select-row"><label>STAGE<select id="stage">${Object.entries(
+        STAGES,
+      )
+        .map(
+          ([id, stage]) =>
+            `<option value="${id}" ${this.stage === id ? "selected" : ""}>${stage.name}</option>`,
+        )
+        .join(
+          "",
+        )}</select></label><label>MISSION<select id="mode">${Object.entries(
         MODES,
       )
         .map(
@@ -95,22 +109,25 @@ export class UI {
         )
         .join(
           "",
-        )}</select></label></div><p class="briefing" id="brief">${MODES[this.mode].desc}</p><div class="menu-actions"><button class="primary" id="start">ENTER THE DEADWOOD →</button><button id="expand">Larger arena: ${g.expanded ? "on" : "off"}</button></div><p class="muted" style="font-size:10px">Farmer unlocks at 250 lifetime gold · Arbalist at 750. Progress saves on this device.</p></div>`,
+        )}</select></label></div><p class="briefing" id="brief">${MODES[this.mode].desc}</p><p id="stage-brief" class="map-brief">${STAGES[this.stage].desc}</p><div class="menu-actions"><button class="primary" id="start">ENTER THE DEADWOOD →</button><button id="expand">Larger arena: ${g.expanded ? "on" : "off"}</button></div><p class="muted" style="font-size:10px">Farmer unlocks at 250 lifetime gold · Arbalist at 750. Progress saves on this device.</p></div>`,
     );
     for (let card of this.overlay.querySelectorAll("[data-hero]")) {
       let h = HEROES.find((h) => h.id === card.dataset.hero);
-      card
-        .querySelector("canvas")
-        .getContext("2d")
-        .drawImage(sprite("hero", h.color), 0, 0);
+      const portrait = card.querySelector("canvas").getContext("2d");
+      portrait.imageSmoothingEnabled = false;
+      drawHero(portrait, h, 27, 46, 0, false, 1, 0);
+      drawHeldWeapon(portrait, { hero: h, aimAngle: -0.25 }, 27, 46, 0);
       card.onclick = () => {
         this.hero = h.id;
         this.select();
       };
     }
     this.overlay.querySelector("#back").onclick = () => this.menu();
-    this.overlay.querySelector("#stage").onchange = (e) =>
-      (this.stage = e.target.value);
+    this.overlay.querySelector("#stage").onchange = (e) => {
+      this.stage = e.target.value;
+      this.overlay.querySelector("#stage-brief").textContent =
+        STAGES[this.stage].desc;
+    };
     this.overlay.querySelector("#mode").onchange = (e) => {
       this.mode = e.target.value;
       this.overlay.querySelector("#brief").textContent = MODES[this.mode].desc;
@@ -147,14 +164,20 @@ export class UI {
   }
   guide() {
     this.show(
-      `<div class="panel"><div class="panel-head"><h2>Field guide</h2><button id="back">Back</button></div><p><b>Move</b> with WASD / arrow keys or the touch stick. <b>Dash</b> with Space (3 second recharge). Weapons aim and fire automatically. Collect XP gems to choose upgrades. Level-ups also restore 8 HP.</p><p>Carry up to six weapons. Weapons and passives reach level 5. Collect a boss chest with a max-level weapon and its matching passive to evolve it.</p><p><b>Evolution recipes</b><br>${Object.values(
+      `<div class="panel"><div class="panel-head"><h2>Field guide</h2><button id="back">Back</button></div><p><b>Move</b> with WASD / arrow keys or the touch stick. <b>Dash</b> with Space (3 second recharge). Use <b>E</b> for your class skill and <b>F</b> near a locked door (starts with 2 keys; more drop from enemies and boss chests). Weapons aim and fire automatically. Collect XP gems to choose upgrades. Level-ups also restore 8 HP.</p><p><b>Class skills</b><br>${HEROES.map((h) => h.name + " · " + CLASS_SKILLS[h.id].name + ": " + CLASS_SKILLS[h.id].desc).join("<br>")}</p><p><b>Stage hazards</b><br>${Object.values(
+        STAGES,
+      )
+        .map((s) => s.name + ": " + s.desc)
+        .join(
+          "<br>",
+        )}</p><p>Carry up to six weapons. Weapons and passives reach level 5. Collect a boss chest with a max-level weapon and its matching passive to evolve it.</p><p><b>Evolution recipes</b><br>${Object.values(
         WEAPONS,
       )
         .filter((w) => w.name !== "Wunderwaffe")
         .map((w) => `${w.name} + ${PASSIVES[w.passive].name} → ${w.evolved}`)
         .join(
           "<br>",
-        )}</p><p><b>Boss signals (Standard)</b><br>${BOSS_SCHEDULE.map((b) => `${clock(b.at)} · ${b.name}`).join("<br>")}<br>Quick timestamps are halved; Speedrun timestamps are divided by 1.5.</p><p>Margwa’s gold mouths mark its vulnerable window. Stay outside the Panzer’s flame cone. Kill the Thief before its escape timer ends to recover your weapon at full strength. Defeat both Megaton halves. George enrages when hit and drops the Wunderwaffe.</p><p>Music is an original synthesized score, enabled by clicking “Music: off.” No account needed; saves stay in this browser. Clearing site data clears progress.</p></div>`,
+        )}</p><p><b>Boss signals (Standard)</b><br>${BOSS_SCHEDULE.map((b) => `${clock(b.at)} · ${b.name}`).join("<br>")}<br>Every mode uses the same strict 2-minute elapsed-time interval. The boss roster repeats after 10 minutes. Hordes disperse for 6 seconds at each signal. A final timed boss must be defeated to finish a survival run.</p><p>Margwa’s gold mouths mark its vulnerable window. Stay outside the Panzer’s flame cone. Kill the Thief before its escape timer ends to recover your weapon at full strength. Defeat both Megaton halves. George enrages when hit and drops the Wunderwaffe.</p><p>Music is an original synthesized score, enabled by clicking “Music: off.” No account needed; saves stay in this browser. Clearing site data clears progress.</p></div>`,
     );
     this.overlay.querySelector("#back").onclick = () => this.menu();
   }
@@ -189,9 +212,11 @@ export class UI {
     const g = this.game;
     this.hud.hidden = true;
     document.querySelector("#dash").hidden = true;
+    document.querySelector("#skill").hidden = true;
+    document.querySelector("#interact").hidden = true;
     document.querySelector("#arena").classList.remove("playing");
     this.show(
-      `<div class="panel" style="max-width:550px"><span class="tiny">${won ? "TRANSMISSION RECEIVED" : extracted ? "EVACUATION CONFIRMED" : "SIGNAL LOST"}</span><h2>${won ? "You survived the night." : extracted ? "Live to fight again." : "The forest remembers."}</h2><p>${g.player.hero.name} · ${g.world.stage === "forest" ? "Deadwood Forest" : "The Undercroft"} · ${g.mode.name}</p><div class="result-stats"><div><strong>${g.kills}</strong><small>ELIMINATIONS</small></div><div><strong>${clock(g.time)}</strong><small>SURVIVED</small></div><div><strong>+${Math.floor(g.runGold)}</strong><small>GOLD BANKED</small></div></div><div class="menu-actions"><button class="primary" id="retry">DEPLOY AGAIN →</button><button id="home">MAIN MENU</button></div><p>Created by Georgia Rachel · ${g.save.available ? "Progress saved on this device." : "Browser storage unavailable. Keep this tab open to retain progress."}</p></div>`,
+      `<div class="panel" style="max-width:550px"><span class="tiny">${won ? "TRANSMISSION RECEIVED" : extracted ? "EVACUATION CONFIRMED" : "SIGNAL LOST"}</span><h2>${won ? "You survived the night." : extracted ? "Live to fight again." : "The forest remembers."}</h2><p>${g.player.hero.name} · ${STAGES[g.world.stage].name} · ${g.mode.name}</p><div class="result-stats"><div><strong>${g.kills}</strong><small>ELIMINATIONS</small></div><div><strong>${clock(g.time)}</strong><small>SURVIVED</small></div><div><strong>+${Math.floor(g.runGold)}</strong><small>GOLD BANKED</small></div></div><div class="menu-actions"><button class="primary" id="retry">DEPLOY AGAIN →</button><button id="home">MAIN MENU</button></div><p>Created by Georgia Rachel · ${g.save.available ? "Progress saved on this device." : "Browser storage unavailable. Keep this tab open to retain progress."}</p></div>`,
     );
     this.overlay.querySelector("#retry").onclick = () => this.select();
     this.overlay.querySelector("#home").onclick = () => this.menu();
@@ -204,6 +229,10 @@ export class UI {
       .querySelector("#arena")
       .classList.toggle("expanded", this.game.expanded);
     document.querySelector("#dash").hidden = false;
+    document.querySelector("#skill").hidden = false;
+    document.querySelector("#interact").hidden = !["dungeon", "base"].includes(
+      this.game.world.stage,
+    );
     document.querySelector("#hero-label").textContent =
       this.game.player.hero.name.toUpperCase();
     document.querySelector("#mode-label").textContent =
@@ -245,14 +274,26 @@ export class UI {
           .map(([id, lv]) => `<span>${PASSIVES[id].name} ${lv}</span>`)
           .join("");
     }
-    let boss = g.enemies.pool.find((e) => e.active && e.boss),
+    const bosses = g.enemies.pool.filter((e) => e.active && (e.boss || e.half)),
       el = document.querySelector("#boss-hud");
-    el.hidden = !boss;
-    if (boss) {
-      let name =
-        BOSS_SCHEDULE.find((b) => b.type === boss.type)?.name || boss.type;
-      el.innerHTML = `${name}${boss.type === "margwa" ? " · " + boss.heads + " HEADS" : ""}<progress max="${boss.maxHp}" value="${Math.max(0, boss.hp)}" aria-label="${name} health"></progress>`;
-    }
+    el.hidden = !bosses.length;
+    el.innerHTML = bosses
+      .slice(0, 4)
+      .map((b) => {
+        const name =
+          BOSS_SCHEDULE.find((n) => n.type === b.type)?.name ||
+          (b.type === "bomber" ? "Megaton Bomber" : "Megaton Blaster");
+        return `<div>${name}<progress max="${b.maxHp}" value="${Math.max(0, b.hp)}" aria-label="${name} health"></progress></div>`;
+      })
+      .join("");
+    const skill = document.querySelector("#skill");
+    skill.textContent = `[E] ${g.skills.definition.name} · ${g.skills.cooldown > 0 ? Math.ceil(g.skills.cooldown) + "s" : "READY"}`;
+    skill.disabled = g.skills.cooldown > 0;
+    skill.setAttribute("aria-label", skill.textContent);
+    document.querySelector("#interact").textContent =
+      `[F] Unlock · ${p.keys} keys`;
+    document.querySelector("#mission-info").textContent =
+      `${STAGES[g.world.stage].name} · RUN ${clock(g.time)} · ${g.time >= g.mode.duration ? "FINAL BOSS" : "NEXT BOSS " + clock(g.director.nextSpawn)}${p.fireBuff > 0 ? " · RAPID FIRE" : ""}${p.immunity > 0 ? " · IMMUNE" : ""}`;
     let dash = document.querySelector("#dash");
     dash.textContent =
       p.dashCooldown > 0 ? Math.ceil(p.dashCooldown) + "s" : "Dash";

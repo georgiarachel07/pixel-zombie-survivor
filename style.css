@@ -809,3 +809,193 @@ a {
     transition: none !important;
   }
 }
+
+/* Iteration 2: distinct class portraits, readable skill controls and encounter HUD. */
+.selection-panel {
+  max-width: 1000px;
+}
+.hero-card canvas {
+  width: 48px;
+  height: 58px;
+}
+.hero-card {
+  font-size: 10px;
+  min-height: 96px;
+}
+.class-skill-preview {
+  color: #c8d7b9 !important;
+  max-width: 570px;
+}
+.class-skill-preview b {
+  color: var(--amber);
+}
+.map-brief {
+  font-size: 10px !important;
+  margin-top: -5px;
+}
+.hero-info {
+  align-items: flex-start;
+}
+.hero-info > small {
+  white-space: nowrap;
+}
+#skill,
+#interact {
+  position: absolute;
+  right: 20px;
+  z-index: 3;
+  touch-action: none;
+  font-size: 10px;
+  background: #1b3028ed;
+  border-color: #8f9d69;
+}
+#skill {
+  bottom: 64px;
+  max-width: 260px;
+  color: #f6daa0;
+}
+#interact {
+  bottom: 112px;
+}
+#skill:disabled {
+  opacity: 0.75;
+  color: #bdc3b1;
+}
+#mission-info {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  top: 83px;
+  text-align: center;
+  font-size: 8px;
+  color: #b9c9ad;
+  letter-spacing: 0.5px;
+}
+#boss-hud {
+  top: 106px;
+  left: 26%;
+  right: 26%;
+  display: grid;
+  gap: 5px;
+}
+#boss-hud[hidden] {
+  display: none;
+}
+#boss-hud > div {
+  background: #101b1bda;
+  padding: 5px 8px;
+}
+#loadout {
+  right: 20px;
+  bottom: 14px;
+}
+#dash {
+  right: 20px;
+  bottom: 160px;
+  font-size: 10px;
+  min-height: 42px;
+}
+.controls {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.panel .briefing {
+  margin-top: 12px;
+}
+#skill[hidden],
+#interact[hidden] {
+  display: none;
+}
+@media (max-width: 850px) {
+  .hero-card canvas {
+    width: 40px;
+    height: 48px;
+  }
+  .hero-card {
+    min-height: 84px;
+  }
+  .hero-info p {
+    font-size: 11px;
+  }
+  .selection-panel {
+    max-width: 720px;
+  }
+}
+@media (max-width: 520px) {
+  .roster {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .hero-card canvas {
+    width: 40px;
+    height: 48px;
+  }
+  .hero-card {
+    min-height: 90px;
+  }
+  .hero-info {
+    display: block;
+  }
+  .hero-info > small {
+    display: none;
+  }
+  .class-skill-preview {
+    font-size: 10px !important;
+  }
+  .selection-panel .menu-actions .primary {
+    padding: 12px;
+    font-size: 10px;
+  }
+  .selection-panel .panel-head h2 {
+    font-size: 25px;
+  }
+  #skill {
+    right: 12px;
+    bottom: 58px;
+    max-width: 190px;
+    font-size: 9px;
+  }
+  #interact {
+    right: 12px;
+    bottom: 104px;
+    font-size: 9px;
+  }
+  #dash {
+    right: 12px;
+    bottom: 150px;
+  }
+  #mission-info {
+    top: 76px;
+    font-size: 7px;
+  }
+  #boss-hud {
+    top: 97px;
+    left: 15%;
+    right: 15%;
+    font-size: 8px;
+  }
+  #loadout {
+    left: 60px;
+    bottom: 12px;
+    gap: 3px;
+  }
+  #loadout span {
+    font-size: 7px;
+    padding: 5px;
+  }
+  .controls {
+    justify-content: flex-start;
+  }
+}
+
+.hero-card canvas {
+  width: 63px;
+  height: 56px;
+}
+@media (max-width: 850px) {
+  .hero-card canvas {
+    width: 54px;
+    height: 48px;
+  }
+}
