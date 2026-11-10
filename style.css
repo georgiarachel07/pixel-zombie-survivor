@@ -999,3 +999,9 @@ a {
     height: 48px;
   }
 }
+
+@media (min-width: 851px) {
+  #arena:not(.expanded) {
+    max-height: calc(100dvh - 170px);
+  }
+}

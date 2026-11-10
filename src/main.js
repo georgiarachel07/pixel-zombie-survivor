@@ -1,17 +1,17 @@
-import { Player } from "./Player.js?v=2.0.1";
-import { EnemyManager } from "./EnemyManager.js?v=2.0.1";
-import { WeaponSystem } from "./WeaponSystem.js?v=2.0.1";
-import { PickupManager } from "./PickupManager.js?v=2.0.1";
-import { FXManager } from "./FXManager.js?v=2.0.1";
-import { World } from "./World.js?v=2.0.1";
-import { Save } from "./Save.js?v=2.0.1";
-import { UI } from "./UI.js?v=2.0.1";
-import { AudioManager } from "./Audio.js?v=2.0.1";
-import { Input } from "./Input.js?v=2.0.1";
-import { ClassSkills } from "./ClassSkills.js?v=2.0.1";
-import { BossDirector } from "./BossDirector.js?v=2.0.1";
-import { drawHero, drawSprite } from "./Sprites.js?v=2.0.1";
-import { HEROES, MODES } from "./data.js?v=2.0.1";
+import { Player } from "./Player.js?v=2.0.2";
+import { EnemyManager } from "./EnemyManager.js?v=2.0.2";
+import { WeaponSystem } from "./WeaponSystem.js?v=2.0.2";
+import { PickupManager } from "./PickupManager.js?v=2.0.2";
+import { FXManager } from "./FXManager.js?v=2.0.2";
+import { World } from "./World.js?v=2.0.2";
+import { Save } from "./Save.js?v=2.0.2";
+import { UI } from "./UI.js?v=2.0.2";
+import { AudioManager } from "./Audio.js?v=2.0.2";
+import { Input } from "./Input.js?v=2.0.2";
+import { ClassSkills } from "./ClassSkills.js?v=2.0.2";
+import { BossDirector } from "./BossDirector.js?v=2.0.2";
+import { drawHero, drawSprite } from "./Sprites.js?v=2.0.2";
+import { HEROES, MODES } from "./data.js?v=2.0.2";
 
 export class Game {
   constructor() {
@@ -57,15 +57,9 @@ export class Game {
     this.mode = MODES[modeId];
     this.player = new Player(hero, this.save.data.shop);
     this.world = new World(stage);
-    if (this.world.blocked(this.player.x, this.player.y, this.player.radius)) {
-      for (let i = 0; i < 50; i++) {
-        let x = 2048 + i * 4;
-        if (!this.world.blocked(x, 2048, this.player.radius)) {
-          this.player.x = x;
-          break;
-        }
-      }
-    }
+    const spawn = this.world.safePoint(2048, 2048, this.player.radius);
+    this.player.x = spawn.x;
+    this.player.y = spawn.y;
     this.fx = new FXManager();
     this.enemies = new EnemyManager(this);
     this.pickups = new PickupManager(this);

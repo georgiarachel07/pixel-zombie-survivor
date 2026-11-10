@@ -1,6 +1,6 @@
-import { WEAPONS, PASSIVES } from "./data.js?v=2.0.1";
-import { inArc, inThrust } from "./Combat.js?v=2.0.1";
-import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.0.1";
+import { WEAPONS, PASSIVES } from "./data.js?v=2.0.2";
+import { inArc, inThrust } from "./Combat.js?v=2.0.2";
+import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.0.2";
 export class WeaponSystem {
   constructor(game) {
     this.game = game;

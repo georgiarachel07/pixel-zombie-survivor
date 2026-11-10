@@ -7,9 +7,9 @@ import {
   BOSS_SCHEDULE,
   STAGES,
   CLASS_SKILLS,
-} from "./data.js?v=2.0.1";
-import { drawHero } from "./Sprites.js?v=2.0.1";
-import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.0.1";
+} from "./data.js?v=2.0.2";
+import { drawHero } from "./Sprites.js?v=2.0.2";
+import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.0.2";
 export const clock = (t) =>
   `${Math.floor(Math.max(0, t) / 60)
     .toString()
@@ -238,6 +238,11 @@ export class UI {
     document.querySelector("#mode-label").textContent =
       this.game.mode.name.toUpperCase();
     this.lastLoadout = "";
+    requestAnimationFrame(() =>
+      document
+        .querySelector("#arena")
+        .scrollIntoView({ block: "center", behavior: "instant" }),
+    );
     this.update(true);
   }
   update(force = false) {

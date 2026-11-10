@@ -9,7 +9,25 @@ import { PickupManager } from "../src/PickupManager.js";
 import { World } from "../src/World.js";
 import { HEROES, MODES, STAGES, WEAPONS, PASSIVES } from "../src/data.js";
 import { inArc, inThrust, segmentRect } from "../src/Combat.js";
-test('new class starter weapons and passive options are distinct and available',()=>{assert.deepEqual(HEROES.map(h=>h.weapon),['rifle','slash','bow','daggers','fireball','sword','shuriken','pitchfork','bolt']);assert.ok(WEAPONS.chainsaw&&WEAPONS.necro&&PASSIVES.crit&&PASSIVES.lifesteal);});
+test("new class starter weapons and passive options are distinct and available", () => {
+  assert.deepEqual(
+    HEROES.map((h) => h.weapon),
+    [
+      "rifle",
+      "slash",
+      "bow",
+      "daggers",
+      "fireball",
+      "sword",
+      "shuriken",
+      "pitchfork",
+      "bolt",
+    ],
+  );
+  assert.ok(
+    WEAPONS.chainsaw && WEAPONS.necro && PASSIVES.crit && PASSIVES.lifesteal,
+  );
+});
 const meta = { hp: 0, attack: 0, speed: 0, armor: 0, magnet: 0 };
 function game(hero = "soldier", stage = "forest", mode = "standard") {
   const g = {
@@ -50,10 +68,60 @@ function target(g, x = g.player.x + 45, y = g.player.y) {
   g.enemies.hash.rebuild(g.enemies.pool);
   return e;
 }
-test('tornado contact physically drags an enemy along the projectile path',()=>{let g=game(),e=target(g,2090,2068);g.weapons.weapons=[];let before=e.y;g.weapons.shoot({id:'tornado',level:1,evolved:false},2090,2048,0,1,25);g.weapons.update(.05);assert.ok(e.y<before);});
-test('robot companions use tracking laser damage and necromancy orbs siphon health',()=>{let g=game(),e=target(g,2100,2048);g.weapons.weapons=[];g.weapons.add('robot');let hp=e.hp;g.weapons.update(.016);assert.ok(e.hp<hp&&g.weapons.lasers.some(l=>l.life>0));assert.equal(g.weapons.projectiles.some(p=>p.active),false);g.weapons.weapons=[];g.weapons.add('necro');g.player.hp-=10;let playerHP=g.player.hp;g.weapons.update(.016);assert.ok(g.player.hp>playerHP);});
-test('Thunderbolt high-HP targeting excludes off-screen enemies',()=>{let g=game();let normal=target(g,2100,2048),hidden=target(g,3000,2048);normal.hp=100;hidden.hp=1e7;g.enemies.hash.rebuild(g.enemies.pool);for(let i=0;i<10;i++)assert.equal(g.weapons.target(true),normal);});
-test('boss signals cancel pending grave risings during the horde break',()=>{let g=game('soldier','graveyard');g.world.rising.push({x:2100,y:2100,delay:.1});g.time=120;g.director.update();assert.equal(g.world.rising.length,0);g.world.graveClock=0;g.world.update(.2,g);assert.equal(g.world.rising.length,0);});
+test("tornado contact physically drags an enemy along the projectile path", () => {
+  let g = game(),
+    e = target(g, 2090, 2068);
+  g.weapons.weapons = [];
+  let before = e.y;
+  g.weapons.shoot(
+    { id: "tornado", level: 1, evolved: false },
+    2090,
+    2048,
+    0,
+    1,
+    25,
+  );
+  g.weapons.update(0.05);
+  assert.ok(e.y < before);
+});
+test("robot companions use tracking laser damage and necromancy orbs siphon health", () => {
+  let g = game(),
+    e = target(g, 2100, 2048);
+  g.weapons.weapons = [];
+  g.weapons.add("robot");
+  let hp = e.hp;
+  g.weapons.update(0.016);
+  assert.ok(e.hp < hp && g.weapons.lasers.some((l) => l.life > 0));
+  assert.equal(
+    g.weapons.projectiles.some((p) => p.active),
+    false,
+  );
+  g.weapons.weapons = [];
+  g.weapons.add("necro");
+  g.player.hp -= 10;
+  let playerHP = g.player.hp;
+  g.weapons.update(0.016);
+  assert.ok(g.player.hp > playerHP);
+});
+test("Thunderbolt high-HP targeting excludes off-screen enemies", () => {
+  let g = game();
+  let normal = target(g, 2100, 2048),
+    hidden = target(g, 3000, 2048);
+  normal.hp = 100;
+  hidden.hp = 1e7;
+  g.enemies.hash.rebuild(g.enemies.pool);
+  for (let i = 0; i < 10; i++) assert.equal(g.weapons.target(true), normal);
+});
+test("boss signals cancel pending grave risings during the horde break", () => {
+  let g = game("soldier", "graveyard");
+  g.world.rising.push({ x: 2100, y: 2100, delay: 0.1 });
+  g.time = 120;
+  g.director.update();
+  assert.equal(g.world.rising.length, 0);
+  g.world.graveClock = 0;
+  g.world.update(0.2, g);
+  assert.equal(g.world.rising.length, 0);
+});
 test("all modes use elapsed boss signals exactly every 120 seconds, repeating the roster", () => {
   for (let mode of Object.keys(MODES)) {
     let g = game("soldier", "forest", mode);
@@ -307,5 +375,14 @@ test("boots and crit passives change actual stats; medallion heals only on kills
     assert.equal(p.hp, before + 1);
   } finally {
     Math.random = random;
+  }
+});
+
+test("all stage spawn points are clear of walls, locked doors, and lava", () => {
+  for (let stage of Object.keys(STAGES)) {
+    let w = new World(stage),
+      p = w.safePoint(2048, 2048, 9);
+    assert.equal(w.blocked(p.x, p.y, 9), false, stage);
+    assert.equal(w.inLava(p.x, p.y), false, stage);
   }
 });

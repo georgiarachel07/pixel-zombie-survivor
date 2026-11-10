@@ -1,4 +1,4 @@
-import { segmentRect } from "./Combat.js?v=2.0.1";
+import { segmentRect } from "./Combat.js?v=2.0.2";
 export class World {
   constructor(stage) {
     this.stage = stage;
@@ -78,7 +78,7 @@ export class World {
         this.add("rock", 1300 + i * 139, 1400 + ((i * 191) % 1400), 24, 18);
     }
     if (this.stage === "volcano") {
-      for (let y of [1728, 2240, 2752]) {
+      for (let y of [1728, 2160, 2752]) {
         this.lava.push({ x: 0, y, w: 4096, h: 76 });
         for (let x = 80; x < 4096; x += 256)
           this.bridges.push({ x, y: y - 7, w: 48, h: 90 });

@@ -1,4 +1,4 @@
-import { BOSS_SCHEDULE } from "./data.js?v=2.0.1";
+import { BOSS_SCHEDULE } from "./data.js?v=2.0.2";
 // This clock deliberately uses elapsed simulation time, never mode.pace or the countdown display.
 export class BossDirector {
   constructor(game) {
@@ -19,7 +19,7 @@ export class BossDirector {
       for (let e of g.enemies.pool)
         if (e.active && !e.boss && !e.half) g.enemies.remove(e);
       for (let p of g.enemies.projectiles) p.active = false;
-      if(g.world.rising)g.world.rising.length=0;
+      if (g.world.rising) g.world.rising.length = 0;
       this.suppressUntil = timestamp + 6;
       const boss = g.enemies.spawn(entry.type);
       if (boss) {
