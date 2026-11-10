@@ -1,18 +1,187 @@
-import {createFrame,clearFrame,createFx,composite} from '../vendor/pixelfx/src/core/index.js';
-import * as explosion from '../vendor/pixelfx/src/fx/explosions/small-explosion.js';
-import * as lightning from '../vendor/pixelfx/src/fx/lightning/lightning-strike.js';
-import * as holy from '../vendor/pixelfx/src/fx/holy/heal-aoe.js';
-import * as tornado from '../vendor/pixelfx/src/fx/fire/fire-tornado.js';
-import * as dissolve from '../vendor/pixelfx/src/fx/spawn/disintegrate.js';
-import * as impact from '../vendor/pixelfx/src/fx/impacts/bullet-impact.js';
-const MODULES={explosion,lightning,holy,dissolve,impact,tornado};
+import {
+  createFrame,
+  clearFrame,
+  createFx,
+  composite,
+} from "../vendor/pixelfx/src/core/index.js";
+import * as explosion from "../vendor/pixelfx/src/fx/explosions/small-explosion.js";
+import * as lightning from "../vendor/pixelfx/src/fx/lightning/lightning-strike.js";
+import * as holy from "../vendor/pixelfx/src/fx/holy/heal-aoe.js";
+import * as tornado from "../vendor/pixelfx/src/fx/fire/fire-tornado.js";
+import * as dissolve from "../vendor/pixelfx/src/fx/spawn/disintegrate.js";
+import * as impact from "../vendor/pixelfx/src/fx/impacts/bullet-impact.js";
+const MODULES = { explosion, lightning, holy, dissolve, impact, tornado };
 export class FXManager {
- constructor(){this.particles=Array.from({length:1200},()=>({life:0}));this.labels=Array.from({length:35},()=>({life:0}));this.rings=Array.from({length:40},()=>({life:0}));this.effects=[];this.flash=0;this.shake=0;this.frame=createFrame(320,320);this.canvas=document.createElement('canvas');this.canvas.width=320;this.canvas.height=320;this.ctx=this.canvas.getContext('2d');this.image=this.ctx.createImageData(320,320);this.reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;this.cursor=0;this.bolts=Array.from({length:12},()=>({life:0}));}
- emit(type,x,y,vx=0,vy=0){if(this.effects.length>=5)return;const mod=MODULES[type];if(!mod)return;let fx=createFx(mod,{x:160,y:260,seed:Math.random()*100000|0,...(type==='holy'?{palette:['#302718','#635126','#a17c37','#d1a452','#edc97d','#ffe5a2','#fff3cb','#ffffff']}:type==='tornado'?{height:60,palette:['#1b302b','#335449','#52796c','#739b8d','#97bca8','#c1d9b9','#e6efca','#fff5d9','#ffffff']}: {})});if(type==='lightning')fx.update(.7);this.effects.push({fx,x,y,vx,vy,age:0,type});}
- burst(x,y,color,count=8){for(let i=0;i<count;i++){let p=this.particles[this.cursor++%this.particles.length],a=Math.random()*Math.PI*2,s=15+Math.random()*55;Object.assign(p,{x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-12,color,life:.3+Math.random()*.4,max:.7});}}
- text(x,y,text,color='#ead6a1'){let p=this.labels.find(p=>p.life<=0);if(p)Object.assign(p,{x,y,text,color,life:1});}
- ring(x,y,r,color,life){let p=this.rings.find(p=>p.life<=0);if(p)Object.assign(p,{x,y,r,color,life,max:life});}
- bolt(x,y){let b=this.bolts.find(b=>b.life<=0);if(b)Object.assign(b,{x,y,life:.22});}
- update(dt){this.flash=Math.max(0,this.flash-dt);this.shake=Math.max(0,this.shake-dt*22);for(let p of this.particles)if(p.life>0){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=40*dt;}for(let p of this.labels)if(p.life>0){p.life-=dt;p.y-=16*dt;}for(let p of this.rings)if(p.life>0)p.life-=dt;for(let p of this.bolts)if(p.life>0)p.life-=dt;for(let i=this.effects.length-1;i>=0;i--){let e=this.effects[i];e.fx.update(dt);e.age+=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.type==='tornado'&&e.age>3)e.fx.stop();if(e.fx.done()||e.age>4)this.effects.splice(i,1);}}
- draw(ctx,cx,cy){for(let p of this.particles)if(p.life>0){ctx.globalAlpha=Math.min(1,p.life*3);ctx.fillStyle=p.color;ctx.fillRect(Math.round(p.x-cx),Math.round(p.y-cy),2,2);}ctx.globalAlpha=1;for(let p of this.rings)if(p.life>0){ctx.globalAlpha=p.life/p.max*.7;ctx.strokeStyle=p.color;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x-cx,p.y-cy,p.r*(.8+.2*(1-p.life/p.max)),p.r*.72,0,0,Math.PI*2);ctx.stroke();}ctx.globalAlpha=1;for(let e of this.effects){clearFrame(this.frame);e.fx.draw(this.frame);composite(this.frame,this.image.data);this.ctx.putImageData(this.image,0,0);ctx.drawImage(this.canvas,Math.round(e.x-cx-80),Math.round(e.y-cy-130),160,160);}for(let b of this.bolts)if(b.life>0){ctx.strokeStyle='#ddf7ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(b.x-cx-12,b.y-cy-150);ctx.lineTo(b.x-cx+8,b.y-cy-85);ctx.lineTo(b.x-cx-8,b.y-cy-70);ctx.lineTo(b.x-cx,b.y-cy);ctx.stroke();}ctx.font='bold 9px monospace';for(let p of this.labels)if(p.life>0){ctx.globalAlpha=Math.min(1,p.life*3);ctx.fillStyle=p.color;ctx.fillText(p.text,p.x-cx-p.text.length*2.5,p.y-cy-20);}ctx.globalAlpha=1;}
+  constructor() {
+    this.particles = Array.from({ length: 1200 }, () => ({ life: 0 }));
+    this.labels = Array.from({ length: 35 }, () => ({ life: 0 }));
+    this.rings = Array.from({ length: 40 }, () => ({ life: 0 }));
+    this.effects = [];
+    this.flash = 0;
+    this.shake = 0;
+    this.frame = createFrame(320, 320);
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = 320;
+    this.canvas.height = 320;
+    this.ctx = this.canvas.getContext("2d");
+    this.image = this.ctx.createImageData(320, 320);
+    this.reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.cursor = 0;
+    this.bolts = Array.from({ length: 12 }, () => ({ life: 0 }));
+  }
+  emit(type, x, y, vx = 0, vy = 0) {
+    if (this.effects.length >= 5) return;
+    const mod = MODULES[type];
+    if (!mod) return;
+    let fx = createFx(mod, {
+      x: 160,
+      y: 260,
+      seed: (Math.random() * 100000) | 0,
+      ...(type === "holy"
+        ? {
+            palette: [
+              "#302718",
+              "#635126",
+              "#a17c37",
+              "#d1a452",
+              "#edc97d",
+              "#ffe5a2",
+              "#fff3cb",
+              "#ffffff",
+            ],
+          }
+        : type === "tornado"
+          ? {
+              height: 60,
+              palette: [
+                "#1b302b",
+                "#335449",
+                "#52796c",
+                "#739b8d",
+                "#97bca8",
+                "#c1d9b9",
+                "#e6efca",
+                "#fff5d9",
+                "#ffffff",
+              ],
+            }
+          : {}),
+    });
+    if (type === "lightning") fx.update(0.7);
+    this.effects.push({ fx, x, y, vx, vy, age: 0, type });
+  }
+  burst(x, y, color, count = 8) {
+    for (let i = 0; i < count; i++) {
+      let p = this.particles[this.cursor++ % this.particles.length],
+        a = Math.random() * Math.PI * 2,
+        s = 15 + Math.random() * 55;
+      Object.assign(p, {
+        x,
+        y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s - 12,
+        color,
+        life: 0.3 + Math.random() * 0.4,
+        max: 0.7,
+      });
+    }
+  }
+  text(x, y, text, color = "#ead6a1") {
+    let p = this.labels.find((p) => p.life <= 0);
+    if (p) Object.assign(p, { x, y, text, color, life: 1 });
+  }
+  ring(x, y, r, color, life) {
+    let p = this.rings.find((p) => p.life <= 0);
+    if (p) Object.assign(p, { x, y, r, color, life, max: life });
+  }
+  bolt(x, y) {
+    let b = this.bolts.find((b) => b.life <= 0);
+    if (b) Object.assign(b, { x, y, life: 0.22 });
+  }
+  update(dt) {
+    this.flash = Math.max(0, this.flash - dt);
+    this.shake = Math.max(0, this.shake - dt * 22);
+    for (let p of this.particles)
+      if (p.life > 0) {
+        p.life -= dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 40 * dt;
+      }
+    for (let p of this.labels)
+      if (p.life > 0) {
+        p.life -= dt;
+        p.y -= 16 * dt;
+      }
+    for (let p of this.rings) if (p.life > 0) p.life -= dt;
+    for (let p of this.bolts) if (p.life > 0) p.life -= dt;
+    for (let i = this.effects.length - 1; i >= 0; i--) {
+      let e = this.effects[i];
+      e.fx.update(dt);
+      e.age += dt;
+      e.x += e.vx * dt;
+      e.y += e.vy * dt;
+      if (e.type === "tornado" && e.age > 3) e.fx.stop();
+      if (e.fx.done() || e.age > 4) this.effects.splice(i, 1);
+    }
+  }
+  draw(ctx, cx, cy) {
+    for (let p of this.particles)
+      if (p.life > 0) {
+        ctx.globalAlpha = Math.min(1, p.life * 3);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(Math.round(p.x - cx), Math.round(p.y - cy), 2, 2);
+      }
+    ctx.globalAlpha = 1;
+    for (let p of this.rings)
+      if (p.life > 0) {
+        ctx.globalAlpha = (p.life / p.max) * 0.7;
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(
+          p.x - cx,
+          p.y - cy,
+          p.r * (0.8 + 0.2 * (1 - p.life / p.max)),
+          p.r * 0.72,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+      }
+    ctx.globalAlpha = 1;
+    for (let e of this.effects) {
+      clearFrame(this.frame);
+      e.fx.draw(this.frame);
+      composite(this.frame, this.image.data);
+      this.ctx.putImageData(this.image, 0, 0);
+      ctx.drawImage(
+        this.canvas,
+        Math.round(e.x - cx - 80),
+        Math.round(e.y - cy - 130),
+        160,
+        160,
+      );
+    }
+    for (let b of this.bolts)
+      if (b.life > 0) {
+        ctx.strokeStyle = "#ddf7ff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(b.x - cx - 12, b.y - cy - 150);
+        ctx.lineTo(b.x - cx + 8, b.y - cy - 85);
+        ctx.lineTo(b.x - cx - 8, b.y - cy - 70);
+        ctx.lineTo(b.x - cx, b.y - cy);
+        ctx.stroke();
+      }
+    ctx.font = "bold 9px monospace";
+    for (let p of this.labels)
+      if (p.life > 0) {
+        ctx.globalAlpha = Math.min(1, p.life * 3);
+        ctx.fillStyle = p.color;
+        ctx.fillText(p.text, p.x - cx - p.text.length * 2.5, p.y - cy - 20);
+      }
+    ctx.globalAlpha = 1;
+  }
 }

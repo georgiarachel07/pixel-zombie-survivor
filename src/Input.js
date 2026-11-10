@@ -1,4 +1,72 @@
 export class Input {
- constructor(game){this.keys=new Set();this.dash=false;this.touchX=0;this.touchY=0;this.pointer=null;window.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;let k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)&&game.state==='playing')e.preventDefault();this.keys.add(k);if(k===' '&&!e.repeat)this.dash=true;if(k==='escape'&&!e.repeat)game.togglePause();});window.addEventListener('keyup',e=>this.keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{this.clear();if(game.state==='playing')game.togglePause();});document.addEventListener('visibilitychange',()=>{if(document.hidden){this.clear();if(game.state==='playing')game.togglePause();}});let stick=document.querySelector('#joystick'),thumb=stick.firstElementChild;const move=e=>{if(e.pointerId!==this.pointer)return;let r=stick.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,d=Math.hypot(dx,dy);if(d>35){dx=dx/d*35;dy=dy/d*35;}this.touchX=dx/35;this.touchY=dy/35;thumb.style.transform=`translate(${dx}px,${dy}px)`;};stick.addEventListener('pointerdown',e=>{this.pointer=e.pointerId;stick.setPointerCapture(e.pointerId);move(e);});stick.addEventListener('pointermove',move);const end=()=>{this.pointer=null;this.touchX=this.touchY=0;thumb.style.transform='';};stick.addEventListener('pointerup',end);stick.addEventListener('pointercancel',end);document.querySelector('#dash').addEventListener('pointerdown',e=>{e.preventDefault();this.dash=true;});}
- clear(){this.keys.clear();this.touchX=this.touchY=0;this.dash=false;}
+  constructor(game) {
+    this.keys = new Set();
+    this.dash = false;
+    this.touchX = 0;
+    this.touchY = 0;
+    this.pointer = null;
+    window.addEventListener("keydown", (e) => {
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+      let k = e.key.toLowerCase();
+      if (
+        ["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k) &&
+        game.state === "playing"
+      )
+        e.preventDefault();
+      this.keys.add(k);
+      if (k === " " && !e.repeat) this.dash = true;
+      if (k === "escape" && !e.repeat) game.togglePause();
+    });
+    window.addEventListener("keyup", (e) =>
+      this.keys.delete(e.key.toLowerCase()),
+    );
+    window.addEventListener("blur", () => {
+      this.clear();
+      if (game.state === "playing") game.togglePause();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        this.clear();
+        if (game.state === "playing") game.togglePause();
+      }
+    });
+    let stick = document.querySelector("#joystick"),
+      thumb = stick.firstElementChild;
+    const move = (e) => {
+      if (e.pointerId !== this.pointer) return;
+      let r = stick.getBoundingClientRect(),
+        dx = e.clientX - r.left - r.width / 2,
+        dy = e.clientY - r.top - r.height / 2,
+        d = Math.hypot(dx, dy);
+      if (d > 35) {
+        dx = (dx / d) * 35;
+        dy = (dy / d) * 35;
+      }
+      this.touchX = dx / 35;
+      this.touchY = dy / 35;
+      thumb.style.transform = `translate(${dx}px,${dy}px)`;
+    };
+    stick.addEventListener("pointerdown", (e) => {
+      this.pointer = e.pointerId;
+      stick.setPointerCapture(e.pointerId);
+      move(e);
+    });
+    stick.addEventListener("pointermove", move);
+    const end = () => {
+      this.pointer = null;
+      this.touchX = this.touchY = 0;
+      thumb.style.transform = "";
+    };
+    stick.addEventListener("pointerup", end);
+    stick.addEventListener("pointercancel", end);
+    document.querySelector("#dash").addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      this.dash = true;
+    });
+  }
+  clear() {
+    this.keys.clear();
+    this.touchX = this.touchY = 0;
+    this.dash = false;
+  }
 }

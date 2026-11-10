@@ -2,6 +2,8 @@
 
 **A pixel zombie survivor created by Georgia Rachel.**
 
+**[Play Deadwood Signal](https://georgiarachel07.github.io/pixel-zombie-survivor/)** · Free in your browser.
+
 Play in a modern desktop or mobile browser. Move with **WASD / arrows**, dash with **Space**, pause with **Escape**. Touch devices have a movement stick and dash button. Weapons aim and fire automatically. Music starts only after a click; toggle it with **Music: off**.
 
 ## Run locally
@@ -49,7 +51,7 @@ The enemy pool holds **1,800 simultaneous enemies**. This is a capacity, not a p
 
 ## PixelFX
 
-`FXManager.js` directly imports the actual [patch-gg/pixelfx](https://github.com/patch-gg/pixelfx) core and effects. `createFx`, `createFrame`, `clearFrame` and `composite` update and render live procedural explosions, lightning, holy halos, bullet impacts and disintegration. Vendored modules allow the game to run without a CDN dependency. Source licenses and notices remain in `vendor/pixelfx/`.
+`FXManager.js` directly imports the actual [patch-gg/pixelfx](https://github.com/patch-gg/pixelfx) core and effects. `createFx`, `createFrame`, `clearFrame` and `composite` update and render live procedural explosions, lightning, holy rings, tornadoes, bullet impacts and disintegration. Vendored modules allow the game to run without a CDN dependency. Source licenses and notices remain in `vendor/pixelfx/`.
 
 ## Hosting
 
