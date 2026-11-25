@@ -25,7 +25,10 @@ export function drawHeldWeapon(ctx, p, x, y, time, disabled = false) {
     ctx.fillStyle = c;
     ctx.fillRect(x, y, w, h);
   };
+  // Hands follow the weapon transform, so attack poses visibly grip and swing.
+  const grip = active ? 6 + Math.sin(t * Math.PI) * 7 : 6;
   R(-3, -2, 5, 4, "#d3b08b");
+  R(grip, active ? -7 : 5, 5, 4, "#d3b08b");
   if (id === "soldier") {
     R(0, -3, 19, 6, "#617267");
     R(12, -4, 6, 2, "#a1ab95");
@@ -100,11 +103,10 @@ export function drawHeldWeapon(ctx, p, x, y, time, disabled = false) {
       R(27, -2, 9, 4, "#f2deff");
     }
   } else if (id === "farmer") {
-    R(-2, -1, 32, 3, "#9c774c");
-    R(25, -7, 3, 15, "#aab7b4");
-    R(27, -7, 11, 2, "#d4dcd1");
-    R(27, -1, 13, 2, "#d4dcd1");
-    R(27, 6, 11, 2, "#d4dcd1");
+    R(-2, -2, 35, 4, "#6e4d32"); R(2, -1, 29, 1, "#c1935e");
+    R(27, -10, 4, 21, "#84969b"); R(30, -10, 12, 3, "#dbe8df");
+    R(30, -1, 14, 3, "#dbe8df"); R(30, 8, 12, 3, "#dbe8df");
+    if (active) { ctx.strokeStyle="#dbe8df99";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(13,-12);ctx.lineTo(46,0);ctx.stroke(); }
   } else if (id === "arbalist") {
     R(0, -3, 23, 6, "#7e6446");
     R(5, -12, 4, 24, "#566c72");

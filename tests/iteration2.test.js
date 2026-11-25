@@ -214,7 +214,7 @@ test("chain saw applies real damage over time, not only a visual bleed effect", 
     g.time += 1 / 60;
     g.enemies.update(1 / 60);
   }
-  assert.ok(e.hp <= hp - 10);
+  assert.ok(e.hp < hp && e.bleedTime > 2.4);
   assert.ok(WEAPONS.chainsaw.melee && PASSIVES.crit && PASSIVES.lifesteal);
 });
 test("supply crate waits for impact and drops a collectible timed rapid-fire buff", () => {

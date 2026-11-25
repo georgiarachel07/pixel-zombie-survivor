@@ -1,7 +1,7 @@
 import { CLASS_SKILLS } from "./data.js?v=2.1.0";
 import { inThrust } from "./Combat.js?v=2.1.0";
 import { drawHero } from "./Sprites.js?v=2.1.0";
-import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.1.0";
+import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.2.0";
 export class ClassSkills {
   constructor(game) {
     this.game = game;

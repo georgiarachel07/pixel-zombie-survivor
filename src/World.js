@@ -121,7 +121,7 @@ export class World {
     if (x < r || y < r || x > this.size - r || y > this.size - r) return true;
     for (let o of this.obstacles)
       if (
-        o.active &&
+        o.active && o.kind !== "portal" &&
         x + r > o.x &&
         x - r < o.x + o.w &&
         y + r > o.y &&
@@ -129,6 +129,23 @@ export class World {
       )
         return true;
     return false;
+  }
+  spawnPortalNear(p, g) {
+    const existing = this.obstacles.find((o) => o.active && o.kind === "portal" && o.dynamic);
+    if (existing) return existing;
+    const offsets = [[42, 0], [0, 42], [-42, 0], [0, -42], [42, 42], [-42, 42]];
+    for (const [dx, dy] of offsets) {
+      const at = this.safePoint(p.x + dx, p.y + dy, 12);
+      if (Math.hypot(at.x - p.x, at.y - p.y) > 18) {
+        const portal = this.add("portal", at.x - 18, at.y - 12, 36, 24, Infinity);
+        portal.dynamic = true;
+        portal.spawnedAt = g.time;
+        g.fx.ring?.(at.x, at.y, 28, "#8de6e0", .55);
+        g.toast("KEY SIGNAL · PORTAL FORMED", 2);
+        return portal;
+      }
+    }
+    return null;
   }
   move(e, dx, dy) {
     const steps = Math.max(
@@ -182,8 +199,9 @@ export class World {
         (o) =>
           o.active &&
           o.kind === "portal" &&
+          o.dynamic &&
           Math.hypot(p.x - o.x - o.w / 2, p.y - o.y - o.h / 2) < 72,
-      );
+      ) || this.obstacles.find((o) => o.active && o.kind === "portal" && Math.hypot(p.x - o.x - o.w / 2, p.y - o.y - o.h / 2) < 72);
     if (!o) {
       // Interaction is intentionally silent away from a portal. This prevents
       // key pickup and stray F presses from producing a misleading error.
@@ -196,6 +214,7 @@ export class World {
     }
     p.keys--;
     o.unlocked = true;
+    o.active = false;
     g.enterPortal?.(this, o);
     g.toast("PORTAL STABILIZED · TRANSIT ACTIVE");
     g.audio.effect("chest");
@@ -242,6 +261,7 @@ export class World {
     }
   }
   update(dt, g) {
+    if (g.player.keys > 0) this.spawnPortalNear(g.player, g);
     if (g.input.interact) {
       this.interact(g);
       g.input.interact = false;

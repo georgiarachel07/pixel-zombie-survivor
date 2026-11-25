@@ -1,6 +1,6 @@
-import { WEAPONS, PASSIVES } from "./data.js?v=2.1.0";
+import { WEAPONS, PASSIVES } from "./data.js?v=2.2.0";
 import { inArc, inThrust } from "./Combat.js?v=2.1.0";
-import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.1.0";
+import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.2.0";
 export class WeaponSystem {
   constructor(game) {
     this.game = game;
@@ -502,6 +502,22 @@ export class WeaponSystem {
           a.reach * Math.sin(Math.PI * Math.min(0.95, t + 0.15)),
           16,
         );
+      }
+      // Pixel models for level-up melee skills, not merely hitbox shadows.
+      if (a.id === "knife") {
+        const reach = a.reach * Math.sin(Math.PI * Math.min(.95, t + .15));
+        ctx.fillStyle = "#5d485f"; ctx.fillRect(5, -3, 9, 6);
+        ctx.fillStyle = "#dfe7ed"; ctx.fillRect(14, -3, reach, 6);
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(17, -2, Math.max(2, reach - 4), 2);
+      } else if (a.id === "pitchfork") {
+        const reach = a.reach * Math.sin(Math.PI * Math.min(.95, t + .15));
+        ctx.fillStyle = "#775037"; ctx.fillRect(4, -3, reach, 6);
+        ctx.fillStyle = "#e1eee5";
+        for (let prong = -8; prong <= 8; prong += 8) ctx.fillRect(reach, prong, 14, 3);
+        ctx.fillStyle = "#99aab0"; ctx.fillRect(reach + 10, -10, 3, 20);
+      } else if (a.id === "slash") {
+        const sweep = -a.width / 2 + a.width * t;
+        ctx.save(); ctx.rotate(sweep); ctx.fillStyle = "#63747e"; ctx.fillRect(5, -5, a.reach, 10); ctx.fillStyle = "#dce9e6"; ctx.fillRect(12, -3, a.reach - 9, 6); ctx.fillStyle = "#ffffff"; ctx.fillRect(18, -2, a.reach - 24, 2); ctx.restore();
       }
       ctx.restore();
     }

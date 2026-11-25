@@ -13,6 +13,7 @@ export class AudioManager {
     this.suspended = false;
     this.interval = null;
     this.boss = false;
+    this.bossPhase = 1;
   }
   async unlock() {
     if (!this.ctx) {
@@ -38,7 +39,13 @@ export class AudioManager {
   setBoss(active) {
     if (this.boss === active) return;
     this.boss = active;
+    if (!active) this.bossPhase = 1;
     this.step = 0;
+    if (this.ctx) this.next = this.ctx.currentTime;
+  }
+  setBossPhase(phase) {
+    if (this.bossPhase === phase) return;
+    this.bossPhase = phase;
     if (this.ctx) this.next = this.ctx.currentTime;
   }
   setMusic(on) {
@@ -109,7 +116,7 @@ export class AudioManager {
     while (this.next < this.ctx.currentTime + 0.2) {
       let s = this.step % 32,
         bar = Math.floor(this.step / 32) % 4,
-        root = (this.boss ? [38, 38, 41, 37] : [45, 41, 48, 43])[bar],
+        root = (this.boss ? (this.bossPhase > 1 ? [34, 37, 32, 39] : [38, 38, 41, 37]) : [45, 41, 48, 43])[bar],
         hz = (n) => 440 * 2 ** ((n - 69) / 12),
         arp = this.boss
           ? [0, 1, 7, 12, 13, 7, 1, 7]
@@ -135,7 +142,7 @@ export class AudioManager {
       if (this.intensity > 0.5 && s % 4 === 1)
         this.hiss(this.next, 0.025, 0.05, this.musicGain);
       this.step++;
-      this.next += 60 / (this.boss ? 142 : 106) / 4;
+      this.next += 60 / (this.boss ? (this.bossPhase > 1 ? 166 : 142) : 106) / 4;
     }
   }
   effect(type) {
@@ -173,3 +180,4 @@ export class AudioManager {
     }
   }
 }
+

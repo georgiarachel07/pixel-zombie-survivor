@@ -72,7 +72,8 @@ export class PickupManager {
           g.audio.effect("chest");
         } else if (q.type === "key") {
           p.keys++;
-          g.toast("KEY ACQUIRED · F TO ACTIVATE A NEARBY PORTAL");
+          g.world.spawnPortalNear(p, g);
+          g.toast("KEY ACQUIRED · PORTAL FORMED BESIDE YOU");
         } else {
           p.keys++;
           g.runGold += Math.round(q.value * gain);

@@ -7,7 +7,7 @@ import { HEROES, MODES } from "../src/data.js";
 
 const meta = { hp: 0, attack: 0, speed: 0, armor: 0, magnet: 0 };
 function game() {
-  const g = { canvas: { width: 640, height: 360 }, time: 60, mode: MODES.standard, modeId: "standard", player: new Player(HEROES[0], meta), world: new World("dungeon"), kills: 0, runGold: 0, audio: { effect() {} }, fx: { burst() {}, emit() {}, text() {}, shake: 0 }, toast() {}, weapons: { area() {}, onKill() {}, restore() {}, steal() { return false; }, add() {} }, pickups: { drop() {} }, director: { suppressing: true } };
+  const g = { canvas: { width: 640, height: 360 }, time: 60, mode: MODES.standard, modeId: "standard", player: new Player(HEROES[0], meta), world: new World("dungeon"), kills: 0, runGold: 0, audio: { effect() {} }, fx: { burst() {}, emit() {}, text() {}, ring() {}, shake: 0 }, toast() {}, weapons: { area() {}, onKill() {}, restore() {}, steal() { return false; }, add() {} }, pickups: { drop() {} }, director: { suppressing: true } };
   g.enemies = new EnemyManager(g); return g;
 }
 test("five new zombie variants have distinct combat data and throwers use pooled projectiles", () => {
@@ -24,5 +24,18 @@ test("portal interaction is silent away from exits and consumes one key only at 
   const portal = g.world.obstacles.find((o) => o.kind === "portal");
   g.player.x = portal.x + portal.w / 2; g.player.y = portal.y;
   assert.equal(g.world.interact(g), true); assert.equal(g.player.keys, before - 1); assert.equal(portal.unlocked, true);
+});
+test("a held key forms an adjacent dynamic portal on every stage", () => {
+  for (const stage of ["forest", "dungeon", "graveyard", "volcano", "base"]) {
+    const g = game(); g.world = new World(stage); g.player.keys = 1;
+    const portal = g.world.spawnPortalNear(g.player, g);
+    assert.ok(portal?.dynamic, stage);
+    assert.ok(Math.hypot(portal.x + portal.w / 2 - g.player.x, portal.y + portal.h / 2 - g.player.y) < 70, stage);
+  }
+});
+test("bosses transform at half health with a phase-two resistance and palette", () => {
+  const g = game(); const boss = g.enemies.spawn("panzer", 2200, 2048);
+  const before = boss.color; g.enemies.hit(boss, boss.maxHp * .75);
+  assert.equal(boss.phase2, true); assert.notEqual(boss.color, before); assert.ok(boss.armor > 14);
 });
 

@@ -7,7 +7,7 @@ import {
   BOSS_SCHEDULE,
   STAGES,
   CLASS_SKILLS,
-} from "./data.js?v=2.1.0";
+} from "./data.js?v=2.2.0";
 import { drawHero } from "./Sprites.js?v=2.1.0";
 import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.1.0";
 export const clock = (t) =>
