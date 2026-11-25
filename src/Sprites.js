@@ -251,3 +251,33 @@ export function drawSprite(
   ctx.drawImage(s, -16, -30);
   ctx.restore();
 }
+
+// Per-type silhouettes make enemy reads possible at a glance without allocating
+// a canvas or sprite object in the combat loop.
+export function drawEnemySprite(ctx, e, x, y, time, flip = 1) {
+  const crawl = e.type === "crawler", boss = e.boss || e.half;
+  const step = ((time * (crawl ? 11 : 8) + e.id) | 0) % 2;
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(y)); ctx.scale(flip * (boss ? 1.55 : 1), boss ? 1.55 : 1);
+  ctx.fillStyle = "#08110b88"; ctx.beginPath(); ctx.ellipse(0, 5, crawl ? 13 : 11, 4, 0, 0, Math.PI * 2); ctx.fill();
+  if (e.hit > 0) ctx.filter = "brightness(2.4)";
+  const R=(a,b,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(a,b,w,h)};
+  if (boss) {
+    R(-12,-15,24,28,e.color); R(-17,-10,6,20,e.color); R(12,-10,6,20,e.color); R(-9,11,6,10,"#222b29"); R(4,11,6,10,"#222b29"); R(-8,-29,16,16,e.color);
+    if(e.type==="panzer"){R(-13,-31,26,7,"#68736b");R(8,-12,20,5,"#4e574f");R(22,-11,7,3,"#ff9c58");}
+    else if(e.type==="george"){R(-14,-18,28,10,"#597c93");R(-10,-31,20,8,"#b9d4df");R(-6,-25,12,3,"#435664");}
+    else if(e.type==="thief"){R(-15,-22,30,9,"#4a385d");R(-11,-29,22,9,"#2d283d");R(-6,-25,4,2,"#d9c6ff");R(3,-25,4,2,"#d9c6ff");}
+    else if(e.type==="megaton"||e.half){R(-10,-22,20,10,"#798c42");R(-5,-18,10,3,"#dff182");R(-17,-4,34,5,"#6f8c4a");}
+    else { R(-18,-25,10,12,e.color);R(-5,-32,10,18,e.color);R(8,-25,10,12,e.color);R(-16,-22,5,4,"#ffdc8a");R(-2,-29,5,4,"#ffdc8a");R(12,-22,5,4,"#ffdc8a"); }
+  } else if(crawl) {
+    R(-15,-4,29,9,e.color);R(-10,-13,12,11,"#91a885");R(3,-7,13,4,"#4d654d");R(-13,4,8,3,"#27362d");R(6,4,9,3,"#27362d");R(-7,-10,3,2,"#ffd778");
+  } else {
+    R(-7,0,5,8+step,"#19241f");R(4,0,5,8+(1-step),"#19241f");R(-8,-13,16,14,e.color);R(-11,-11+step,4,11,"#78906b");R(7,-11-step,4,11,"#78906b");R(-6,-24,12,12,"#8eac79");R(-6,-25,12,4,"#3d5040");R(-5,-19,3,2,"#ffd778");R(3,-19,2,2,"#ffd778");
+    if(e.type==="thrower"){R(7,-14,13,4,"#7c6651");R(18,-16,6,6,"#a29473");}
+    if(e.type==="runner"){R(-10,-8,22,3,"#a65c55");}
+    if(e.type==="tank"){R(-11,-16,22,18,"#53656a");R(-9,-27,18,6,"#89999a");}
+    if(e.type==="exploder"){R(-3,-19,7,7,"#f0c56c");R(-2,-18,5,5,"#ff8d56");}
+  }
+  ctx.restore();
+}
+

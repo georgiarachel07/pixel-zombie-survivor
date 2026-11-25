@@ -4,7 +4,7 @@
 
 **[Play Deadwood Signal](https://georgiarachel07.github.io/pixel-zombie-survivor/)** · Free in your browser.
 
-Play in a modern desktop or mobile browser. Move with **WASD / arrows**, dash with **Space**, activate your class skill with **E**, unlock a nearby door with **F**, and pause with **Escape**. Touch devices have a movement stick and dash button. Weapons aim and fire automatically. Music starts only after a click; toggle it with **Music: off**.
+Play in a modern desktop or mobile browser. Move with **WASD / arrows**, dash with **Space**, activate your class skill with **E**, stabilize a nearby portal with **F**, and pause with **Escape**. Touch devices have a movement stick and dash button. Weapons aim and fire automatically. Music starts only after a click; toggle it with **Music: off**.
 
 ## Run locally
 
@@ -25,7 +25,7 @@ npm run check
 
 - Nine heroes: Soldier, Warrior, Archer, Rogue, Mage, Paladin, Ninja, Farmer and Arbalist. Farmer unlocks at 250 lifetime gold, Arbalist at 750.
 - Five distinct stages: open Forest, Dungeon catacombs, foggy Graveyard, Volcanic Fortress, and Abandoned Military Base.
-- Graveyard tombstones are destructible; grave risings have a one-second warning every 18 seconds. Lava hurts both sides and has safe narrow bridges. Barrels in the base explode and can chain-react. Dungeon/base doors use keys (start with two; enemies and boss chests drop more); enemies can bash doors down.
+- Graveyard tombstones are destructible; grave risings have a one-second warning every 18 seconds. Lava hurts both sides and has safe narrow bridges. Barrels in the base explode and can chain-react. Locked portals use keys (start with two; enemies and boss chests drop more) and transfer the survivor to another combat zone or an active boss arena.
 - Standard: survive 20 minutes. Quick: survive 10 minutes with double XP and gold. Speedrun: kill 1,000 enemies before a 15-minute countdown expires.
 - Collect XP gems and choose one of three upgrades. Weapons and passive items level to five. Carry up to six weapons.
 - Boss chests evolve a max-level weapon with its matching passive; recipes are in the in-game Field Guide.
@@ -68,7 +68,7 @@ Class skills can be ranked up in level-up choices. Hourglass reduces active cool
 
 ## Architecture
 
-Native ES modules, HTML5 Canvas 2D, fixed 60 Hz simulation with catch-up limits. `Player.js`, `EnemyManager.js`, `WeaponSystem.js`, `UI.js`, and `FXManager.js` separate the main systems. `SpatialHash.js` uses typed-array linked cell lists for targeting and collision queries. Enemy, projectile, pickup, particle and floating-text pools have fixed capacities. Structured-stage navigation uses a shared breadth-first flow field, invalidated by destroyed cover and opened doors. BossDirector.js owns exact timed signals, ClassSkills.js owns skill cooldowns and timed effects, Combat.js owns geometric hit tests, and WeaponVisuals.js owns rotated equipment animation. Sprites are drawn once into cached small canvases. Rendering culls off-screen enemies and pickups.
+Native ES modules, HTML5 Canvas 2D, fixed 60 Hz simulation with catch-up limits. `Player.js`, `EnemyManager.js`, `WeaponSystem.js`, `UI.js`, and `FXManager.js` separate the main systems. `SpatialHash.js` uses typed-array linked cell lists for targeting and collision queries. Enemy, projectile, pickup, particle and floating-text pools have fixed capacities. Structured-stage navigation uses a shared breadth-first flow field, invalidated by destroyed cover and stabilized portals. BossDirector.js owns exact timed signals, ClassSkills.js owns skill cooldowns and timed effects, Combat.js owns geometric hit tests, and WeaponVisuals.js owns rotated equipment animation. Sprites are drawn once into cached small canvases. Rendering culls off-screen enemies and pickups.
 
 The enemy pool holds **1,800 simultaneous enemies**. This is a capacity, not a promise of 60 FPS on every device. Actual performance depends on browser, hardware, visible entities and active effects. PixelFX effects are capped at five concurrent live instances.
 
@@ -85,3 +85,4 @@ This project is a static website. On GitHub: **Settings → Pages → Deploy fro
 Creator: **Georgia Rachel**. Original game sprites and procedural music. PixelFX: Patch contributors, MIT; included effects/core also acknowledge Hugo Duprez / Sprite Fusion and rehan-remade / Hollow Crown where applicable. See `THIRD_PARTY_NOTICES.md`.
 
 Development history uses actual creation dates. Project status and verification notes are maintained in `PROJECT_MEMORY.md`.
+

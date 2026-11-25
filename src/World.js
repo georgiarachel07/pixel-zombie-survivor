@@ -1,4 +1,4 @@
-import { segmentRect } from "./Combat.js?v=2.0.2";
+import { segmentRect } from "./Combat.js?v=2.1.0";
 export class World {
   constructor(stage) {
     this.stage = stage;
@@ -55,7 +55,7 @@ export class World {
             (((x + y) / 224) | 0) % 3 === 0 &&
             Math.hypot(x + 108 - 2048, y - 2048) > 130
           )
-            this.add("door", x + 72, y, 72, 14, 120);
+            this.add("portal", x + 72, y, 72, 14, Infinity);
           if (this.stage === "dungeon")
             this.add("pillar", x + 48, y + 64, 22, 22);
           else this.add("crate", x + 140, y + 120, 24, 24, 85);
@@ -99,7 +99,7 @@ export class World {
     if (!this.flow) return;
     this.solid.fill(0);
     for (let o of this.obstacles) {
-      if (!o.active || o.kind === "door") continue;
+      if (!o.active || o.kind === "portal") continue;
       let x0 = Math.max(0, Math.floor((o.x - 10 - 8) / 16)),
         x1 = Math.min(255, Math.ceil((o.x + o.w + 10 - 8) / 16)),
         y0 = Math.max(0, Math.floor((o.y - 10 - 8) / 16)),
@@ -145,7 +145,7 @@ export class World {
       for (let o of this.obstacles)
         if (
           o.active &&
-          o.kind === "door" &&
+          o.kind === "portal" &&
           Math.hypot(e.x - o.x - o.w / 2, e.y - o.y - o.h / 2) < 62
         ) {
           o.hp -= Math.hypot(dx, dy) * 2;
@@ -181,22 +181,25 @@ export class World {
       o = this.obstacles.find(
         (o) =>
           o.active &&
-          o.kind === "door" &&
+          o.kind === "portal" &&
           Math.hypot(p.x - o.x - o.w / 2, p.y - o.y - o.h / 2) < 72,
       );
     if (!o) {
-      g.toast("NO LOCKED DOOR NEARBY");
+      // Interaction is intentionally silent away from a portal. This prevents
+      // key pickup and stray F presses from producing a misleading error.
+      return false;
       return;
     }
     if (p.keys < 1) {
       g.toast("A KEY IS REQUIRED · FIND ONE IN DROPS OR CHESTS");
-      return;
+      return false;
     }
     p.keys--;
-    o.active = false;
-    this.geometryDirty = true;
-    g.toast("DOOR UNLOCKED");
+    o.unlocked = true;
+    g.enterPortal?.(this, o);
+    g.toast("PORTAL STABILIZED · TRANSIT ACTIVE");
     g.audio.effect("chest");
+    return true;
   }
   damageSegment(x0, y0, x1, y1, damage, g, r = 1, penetrate = false) {
     let hit = false;
@@ -447,14 +450,13 @@ export class World {
         ctx.fillRect(x + 5, y, 4, 5);
         ctx.fillStyle = "#b6804a";
         ctx.fillRect(x, y - 8, o.w, 3);
-      } else if (o.kind === "door") {
-        ctx.fillStyle = "#71583b";
-        ctx.fillRect(x, y - 8, o.w, o.h + 8);
-        ctx.fillStyle = "#bea767";
-        ctx.fillRect(x, y - 5, o.w, 3);
-        ctx.fillRect(x + o.w / 2 - 3, y - 4, 6, 9);
-        ctx.fillStyle = "#242322";
-        ctx.fillRect(x + o.w / 2 - 1, y - 1, 2, 4);
+      } else if (o.kind === "portal") {
+        ctx.fillStyle = "#312b4e";
+        ctx.fillRect(x, y - 12, o.w, o.h + 12);
+        ctx.fillStyle = o.unlocked ? "#8de6e0" : "#d6b36b";
+        ctx.fillRect(x + 4, y - 8, o.w - 8, 5);
+        ctx.fillStyle = o.unlocked ? "#d6ffff" : "#5b4a58";
+        ctx.fillRect(x + o.w / 2 - 3, y - 6, 6, 10);
       } else {
         ctx.fillStyle =
           o.kind === "crate"
@@ -512,3 +514,4 @@ export class World {
       }
   }
 }
+

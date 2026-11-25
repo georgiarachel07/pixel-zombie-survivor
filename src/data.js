@@ -379,7 +379,7 @@ export const STAGES = {
   },
   dungeon: {
     name: "Dungeon · Catacombs",
-    desc: "Stone corridors, pillars and locked doors. Press F nearby to spend a key.",
+    desc: "Stone corridors, pillars and locked portals. Press F nearby to spend a key.",
   },
   graveyard: {
     name: "Graveyard · Haunted Grounds",
@@ -394,6 +394,17 @@ export const STAGES = {
     desc: "Industrial rooms and explosive hazard barrels. Shoot barrels to chain blasts.",
   },
 };
+// Stateless descriptors keep the hot EnemyManager loop allocation-free while making
+// enemy composition easy to tune per wave.
+export const ENEMY_TYPES = {
+  normal: { hp: 23, speed: 30, radius: 8, damage: 9, color: "#718e65" },
+  thrower: { hp: 30, speed: 25, radius: 8, damage: 8, color: "#a69a6e", range: 175 },
+  crawler: { hp: 16, speed: 42, radius: 5, damage: 6, color: "#758c7a" },
+  runner: { hp: 20, speed: 76, radius: 7, damage: 8, color: "#b87262" },
+  tank: { hp: 94, speed: 19, radius: 11, damage: 15, armor: 5, color: "#697a72" },
+  exploder: { hp: 35, speed: 38, radius: 8, damage: 26, color: "#c89055" },
+};
+export const BOSS_TYPES = ["panzer", "margwa", "george", "thief", "megaton"];
 export const CLASS_SKILLS = {
   soldier: {
     name: "Tactical Airdrop",
@@ -468,3 +479,4 @@ export const BOSS_SCHEDULE = [
     name: "George A. Romero",
   },
 ];
+

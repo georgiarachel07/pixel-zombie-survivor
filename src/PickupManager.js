@@ -72,7 +72,7 @@ export class PickupManager {
           g.audio.effect("chest");
         } else if (q.type === "key") {
           p.keys++;
-          g.toast("KEY ACQUIRED · F TO UNLOCK A NEARBY DOOR");
+          g.toast("KEY ACQUIRED · F TO ACTIVATE A NEARBY PORTAL");
         } else {
           p.keys++;
           g.runGold += Math.round(q.value * gain);
@@ -143,3 +143,4 @@ export class PickupManager {
 function gainFor(g, p) {
   return g.mode.mult * (p.hero.gain || 1);
 }
+

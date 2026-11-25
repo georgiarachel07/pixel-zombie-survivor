@@ -7,9 +7,9 @@ import {
   BOSS_SCHEDULE,
   STAGES,
   CLASS_SKILLS,
-} from "./data.js?v=2.0.2";
-import { drawHero } from "./Sprites.js?v=2.0.2";
-import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.0.2";
+} from "./data.js?v=2.1.0";
+import { drawHero } from "./Sprites.js?v=2.1.0";
+import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.1.0";
 export const clock = (t) =>
   `${Math.floor(Math.max(0, t) / 60)
     .toString()
@@ -164,7 +164,7 @@ export class UI {
   }
   guide() {
     this.show(
-      `<div class="panel"><div class="panel-head"><h2>Field guide</h2><button id="back">Back</button></div><p><b>Move</b> with WASD / arrow keys or the touch stick. <b>Dash</b> with Space (3 second recharge). Use <b>E</b> for your class skill and <b>F</b> near a locked door (starts with 2 keys; more drop from enemies and boss chests). Weapons aim and fire automatically. Collect XP gems to choose upgrades. Level-ups also restore 8 HP.</p><p><b>Class skills</b><br>${HEROES.map((h) => h.name + " · " + CLASS_SKILLS[h.id].name + ": " + CLASS_SKILLS[h.id].desc).join("<br>")}</p><p><b>Stage hazards</b><br>${Object.values(
+      `<div class="panel"><div class="panel-head"><h2>Field guide</h2><button id="back">Back</button></div><p><b>Move</b> with WASD / arrow keys or the touch stick. <b>Dash</b> with Space (3 second recharge). Use <b>E</b> for your class skill and <b>F</b> near a locked portal (starts with 2 keys; more drop from enemies and boss chests). A stabilized portal moves you to the next combat zone, or into an active boss arena. Weapons aim and fire automatically. Collect XP gems to choose upgrades. Level-ups also restore 8 HP.</p><p><b>Class skills</b><br>${HEROES.map((h) => h.name + " · " + CLASS_SKILLS[h.id].name + ": " + CLASS_SKILLS[h.id].desc).join("<br>")}</p><p><b>Stage hazards</b><br>${Object.values(
         STAGES,
       )
         .map((s) => s.name + ": " + s.desc)
@@ -296,7 +296,7 @@ export class UI {
     skill.disabled = g.skills.cooldown > 0;
     skill.setAttribute("aria-label", skill.textContent);
     document.querySelector("#interact").textContent =
-      `[F] Unlock · ${p.keys} keys`;
+      `[F] Activate portal · ${p.keys} keys`;
     document.querySelector("#mission-info").textContent =
       `${STAGES[g.world.stage].name} · RUN ${clock(g.time)} · ${g.time >= g.mode.duration ? "FINAL BOSS" : "NEXT BOSS " + clock(g.director.nextSpawn)}${p.fireBuff > 0 ? " · RAPID FIRE" : ""}${p.immunity > 0 ? " · IMMUNE" : ""}`;
     let dash = document.querySelector("#dash");
@@ -304,3 +304,4 @@ export class UI {
       p.dashCooldown > 0 ? Math.ceil(p.dashCooldown) + "s" : "Dash";
   }
 }
+

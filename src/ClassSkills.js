@@ -1,7 +1,7 @@
-import { CLASS_SKILLS } from "./data.js?v=2.0.2";
-import { inThrust } from "./Combat.js?v=2.0.2";
-import { drawHero } from "./Sprites.js?v=2.0.2";
-import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.0.2";
+import { CLASS_SKILLS } from "./data.js?v=2.1.0";
+import { inThrust } from "./Combat.js?v=2.1.0";
+import { drawHero } from "./Sprites.js?v=2.1.0";
+import { drawHeldWeapon } from "./WeaponVisuals.js?v=2.1.0";
 export class ClassSkills {
   constructor(game) {
     this.game = game;
@@ -59,6 +59,7 @@ export class ClassSkills {
       case "warrior":
         g.weapons.area(p.x, p.y, 110, 145 * damage, { knock: 280 });
         p.spinTime = 0.7;
+        p.weaponAnimation = { id: "slash", angle, age: 0, duration: 0.7, kind: "greatsword" };
         this.event("whirlwind", p.x, p.y, 0.7, { radius: 110 });
         break;
       case "archer":
@@ -283,6 +284,13 @@ export class ClassSkills {
         ctx.moveTo(x, y);
         ctx.lineTo(e.tx - cx, e.ty - cy);
         ctx.stroke();
+      } else if (e.kind === "whirlwind") {
+        ctx.strokeStyle = "#d9f0edbb";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(x, y, 78 + Math.sin(e.age * 16) * 12, e.age * 12, e.age * 12 + 4.9);
+        ctx.stroke();
+        for (let i = 0; i < 3; i++) { ctx.save(); ctx.translate(x, y); ctx.rotate(e.age * 18 + i * 2.1); ctx.fillStyle = "#dfeff0"; ctx.fillRect(8, -4, 70, 8); ctx.fillStyle = "#7d9499"; ctx.fillRect(8, -7, 52, 3); ctx.restore(); }
       } else {
         const r =
           e.kind === "nova"
@@ -307,3 +315,4 @@ export class ClassSkills {
     }
   }
 }
+

@@ -39,6 +39,11 @@ export function drawHeldWeapon(ctx, p, x, y, time, disabled = false) {
   } else if (id === "warrior" || id === "paladin") {
     R(0, -2, 6, 4, "#76604a");
     R(5, -6, 3, 12, id === "paladin" ? "#edce77" : "#b0b7bb");
+    if (id === "warrior") {
+      R(8, -4, 27, 8, "#697983");
+      R(12, -6, 20, 12, "#b7c5cb");
+      R(31, -3, 7, 6, "#e9f0e7");
+    }
     R(
       8,
       -2,
@@ -47,6 +52,13 @@ export function drawHeldWeapon(ctx, p, x, y, time, disabled = false) {
       id === "paladin" ? "#fff0b0" : "#dce1e1",
     );
     R(10, -2, id === "warrior" ? 25 : 18, 1, "#ffffff");
+    if (id === "warrior" && active) {
+      ctx.strokeStyle = "#d9f0ed99";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(-4, 0, 38, -1.15, 1.15);
+      ctx.stroke();
+    }
     if (id === "paladin") {
       R(-5, 9, 10, 17, "#a5883e");
       R(-4, 8, 8, 3, "#ffe1a0");
@@ -118,3 +130,4 @@ export function drawHeldWeapon(ctx, p, x, y, time, disabled = false) {
   }
   ctx.restore();
 }
+

@@ -1,17 +1,17 @@
-import { Player } from "./Player.js?v=2.0.2";
-import { EnemyManager } from "./EnemyManager.js?v=2.0.2";
-import { WeaponSystem } from "./WeaponSystem.js?v=2.0.2";
-import { PickupManager } from "./PickupManager.js?v=2.0.2";
-import { FXManager } from "./FXManager.js?v=2.0.2";
-import { World } from "./World.js?v=2.0.2";
-import { Save } from "./Save.js?v=2.0.2";
-import { UI } from "./UI.js?v=2.0.2";
-import { AudioManager } from "./Audio.js?v=2.0.2";
-import { Input } from "./Input.js?v=2.0.2";
-import { ClassSkills } from "./ClassSkills.js?v=2.0.2";
-import { BossDirector } from "./BossDirector.js?v=2.0.2";
-import { drawHero, drawSprite } from "./Sprites.js?v=2.0.2";
-import { HEROES, MODES } from "./data.js?v=2.0.2";
+import { Player } from "./Player.js?v=2.1.0";
+import { EnemyManager } from "./EnemyManager.js?v=2.1.0";
+import { WeaponSystem } from "./WeaponSystem.js?v=2.1.0";
+import { PickupManager } from "./PickupManager.js?v=2.1.0";
+import { FXManager } from "./FXManager.js?v=2.1.0";
+import { World } from "./World.js?v=2.1.0";
+import { Save } from "./Save.js?v=2.1.0";
+import { UI } from "./UI.js?v=2.1.0";
+import { AudioManager } from "./Audio.js?v=2.1.0";
+import { Input } from "./Input.js?v=2.1.0";
+import { ClassSkills } from "./ClassSkills.js?v=2.1.0";
+import { BossDirector } from "./BossDirector.js?v=2.1.0";
+import { drawHero, drawSprite } from "./Sprites.js?v=2.1.0";
+import { HEROES, MODES } from "./data.js?v=2.1.0";
 
 export class Game {
   constructor() {
@@ -76,12 +76,31 @@ export class Game {
     this.state = "playing";
     this.input.clear();
     this.ui.begin();
-    this.toast("WASD MOVE · SPACE DASH · E CLASS SKILL · F UNLOCK DOOR", 5);
+    this.toast("WASD MOVE · SPACE DASH · E CLASS SKILL · F ACTIVATE PORTAL", 5);
     try {
       await this.audio.unlock();
     } catch {
       this.toast("AUDIO UNAVAILABLE · THE GAME IS STILL PLAYABLE", 3);
     }
+  }
+  enterPortal(world, portal) {
+    const activeBoss = this.enemies.pool.find((e) => e.active && (e.boss || e.half));
+    if (activeBoss) {
+      const point = world.safePoint(2048, 1024, this.player.radius);
+      this.player.x = point.x; this.player.y = point.y;
+      activeBoss.x = 2048; activeBoss.y = 900;
+      world.arenaActive = true;
+      this.toast("PORTAL TRANSIT · BOSS ARENA", 3);
+    } else {
+      const route = ["forest", "dungeon", "graveyard", "volcano", "base"];
+      const next = route[(route.indexOf(world.stage) + 1) % route.length];
+      this.world = new World(next);
+      const point = this.world.safePoint(2048, 2048, this.player.radius);
+      this.player.x = point.x; this.player.y = point.y;
+      this.toast(`PORTAL TRANSIT · ${next.toUpperCase()}`, 3);
+    }
+    this.fx.emit("holy", this.player.x, this.player.y);
+    this.fx.shake = 3;
   }
   togglePause() {
     if (this.state === "playing") {
@@ -314,3 +333,4 @@ Object.defineProperty(window, "deadwoodDiagnostics", {
       })) || [],
   }),
 });
+

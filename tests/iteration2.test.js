@@ -310,7 +310,7 @@ test("Ballista Bolt ignores armor, pierces every target, and crosses a full view
   g.weapons.update(0.1);
   assert.ok(e.hp < 10000);
 });
-test("stage mechanics: destructible tombs, locked doors, damaging lava and explosive barrels", () => {
+test("stage mechanics: destructible tombs, locked portals, damaging lava and explosive barrels", () => {
   assert.equal(Object.keys(STAGES).length, 5);
   let grave = game("soldier", "graveyard"),
     tomb = grave.world.obstacles.find((o) => o.kind === "tomb");
@@ -322,11 +322,11 @@ test("stage mechanics: destructible tombs, locked doors, damaging lava and explo
   grave.world.update(1.1, grave);
   assert.ok(grave.enemies.count >= 2);
   let dungeon = game("soldier", "dungeon"),
-    door = dungeon.world.obstacles.find((o) => o.kind === "door");
-  dungeon.player.x = door.x + door.w / 2;
-  dungeon.player.y = door.y - 25;
+    portal = dungeon.world.obstacles.find((o) => o.kind === "portal");
+  dungeon.player.x = portal.x + portal.w / 2;
+  dungeon.player.y = portal.y - 25;
   dungeon.world.interact(dungeon);
-  assert.equal(door.active, false);
+  assert.equal(portal.unlocked, true);
   assert.equal(dungeon.player.keys, 1);
   let lava = game("soldier", "volcano");
   assert.equal(lava.world.inLava(2048, 1750), true);
@@ -378,7 +378,7 @@ test("boots and crit passives change actual stats; medallion heals only on kills
   }
 });
 
-test("all stage spawn points are clear of walls, locked doors, and lava", () => {
+test("all stage spawn points are clear of walls, locked portals, and lava", () => {
   for (let stage of Object.keys(STAGES)) {
     let w = new World(stage),
       p = w.safePoint(2048, 2048, 9);
@@ -386,3 +386,4 @@ test("all stage spawn points are clear of walls, locked doors, and lava", () => 
     assert.equal(w.inLava(p.x, p.y), false, stage);
   }
 });
+
